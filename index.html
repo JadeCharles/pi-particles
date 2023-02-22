@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Particles</title>
+    <script src="scripts/infrastructure/p5.js"></script>
+    <script src="scripts/apps/particle-life.js"></script>
+    <script src="scripts/apps/particles/particle-options.js"></script>
+    <script src="scripts/apps/particles/particle.js"></script>
+    <link rel="stylesheet" href="css/styles.css" type="text/css" />
+    <script>
+        window.onresize = function() {
+            setup();
+        }
+    </script>
+</head>
+
+<body>
+    <header>
+        <div>
+            <h1>Particle Explorer</h1>
+            <nav>
+                <ul>
+                    <li><a href="https://www.jadecharles.com/" target="_jade">JadeCharles.com</a></li>
+                    <li><a href="https://www.penumbralabs.io" target="_pi">PenumbraLabs.io</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <main id="main-canvas"></main>
+    <footer>
+        <p>Copyright © 2023</p>
+    </footer>
+</body>
+
+</html>

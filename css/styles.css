@@ -1,0 +1,81 @@
+:root { 
+    --background-color: black;
+    --text-color: #DDD;
+    --link-color: rgb(159, 255, 255);
+    --link-hover-color: cyan;
+
+    --border-color: #333;
+    --border: var(--border-color) 1px solid;
+}
+
+body { 
+    margin: 0;
+    font-family: Arial, Tahoma;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+header { 
+    display: block;
+    border-bottom: var(--border);
+}
+
+a { 
+    color: var(--link-color);
+    text-decoration: none;
+}
+
+a:hover { 
+    color: var(--link-hover-color);
+}
+
+h1, h2, h3, h4 { 
+    margin: 0;
+    padding: 0;
+}
+
+header > div { 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+}
+
+header > div > h1 { 
+    font-weight: normal;
+}
+
+header nav ul {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    gap: 16px;
+}
+
+main {
+    display: block;
+    position: relative;
+    height: calc(100vh - 120px);
+    border-bottom: var(--border);
+}
+
+header nav ul > li { 
+    display: block;
+    list-style: none;
+}
+
+header nav ul>li>a { 
+    display: block;
+    padding: 12px 16px;
+    font-size: 12px;
+    border-radius: 12px;
+    border: var(--border);
+}
+
+header nav ul>li>a:hover { 
+    background-color: var(--border-color);
+}
+
