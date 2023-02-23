@@ -1,11 +1,14 @@
 :root { 
     --background-color: black;
-    --text-color: #DDD;
+    --text-color: #DDD;  
+    --input-text-color: #AAA;
+    --light-text-color: #FFFFFF66;
     --link-color: rgb(159, 255, 255);
     --link-hover-color: cyan;
 
     --border-color: #333;
     --border: var(--border-color) 1px solid;
+    --selected-color: #FFFFFF88;
 }
 
 body { 
@@ -23,6 +26,7 @@ header {
 a { 
     color: var(--link-color);
     text-decoration: none;
+    cursor: pointer;
 }
 
 a:hover { 
@@ -34,6 +38,23 @@ h1, h2, h3, h4 {
     padding: 0;
 }
 
+h3 { 
+    margin-bottom: 12px;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="email"],
+select { 
+    padding: 8px;
+    border: var(--border);
+    border-radius: 6px;
+    background-color: transparent;
+    font-size: 13px;
+    font-family: Tahoma;
+    color: var(--text-input-color);
+}
+
 header > div { 
     display: flex;
     justify-content: space-between;
@@ -43,6 +64,137 @@ header > div {
 
 header > div > h1 { 
     font-weight: normal;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-end;
+    gap: 16px;
+}
+
+header>div>h1>span.menu-item { 
+    display: inline-block;
+    position: relative;
+    font-size: 14px;
+    font-weight: normal;
+    margin-left: 12px;
+}
+
+header>div>h1>span.menu-item>.panel {
+    display: none;
+    position: absolute;
+    white-space: nowrap;
+    max-width: 500px;
+    height: 300px;
+    z-index: 12;
+}
+
+header>div>h1>span.menu-item>.panel.show,
+header>div>h1>span.menu-item:hover>.panel { 
+    display: inline-block;
+}
+
+header>div>h1>span.menu-item>.panel>.content { 
+    display: block;
+    border: var(--border);
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;   
+    border-top-width: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 12px;
+    margin-top: 12px;
+}
+
+header>div>h1>span.menu-item>.panel>.content ul {
+    display: block;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+header>div>h1>span.menu-item>.panel>.content ul > li { 
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    display: block;
+    list-style: none;
+    border-bottom: var(--border-color) 1px dashed;
+}
+
+header>div>h1>span.menu-item>.panel>.content ul>li:last-child { 
+    border-bottom-width: 0;
+    margin-bottom: 0;
+}
+
+header>div>h1>span.menu-item>.panel>.content li span.stack { 
+    display: block;
+}
+
+header>div>h1>span.menu-item>.panel>.content li span.stack > span {
+    display: block;
+}
+
+header>div>h1>span.menu-item>.panel>.content li span.stack>strong { 
+    display: block;
+    font-size: 14px;
+    margin: 0;
+    padding-bottom: 8px;
+}
+header>div>h1>span.menu-item>.panel>.content li span.stack>strong>strong { 
+    color: var(--link-color);
+}
+
+header>div>h1>span.menu-item>.panel>.content li span.stack > p {
+    display: block;
+    font-size: 11px;
+    color: var(--light-text-color);
+    margin: 0;
+    padding-bottom: 8px;
+    width: 320px;
+    white-space: normal;
+}
+
+header>div>h1>span.menu-item>.title {
+    cursor: pointer;
+    color: var(--light-text-color);
+    align-items: flex-end;
+    align-content: flex-end;
+    padding-bottom:6px;
+    display: block;
+}
+
+header>div>h1>span.menu-item:hover>.title {
+    color: var(--link-hover-color);
+}
+
+header>div>h1>span#colors { 
+    font-size: 14px;
+    display: inline-block;
+    margin-left: 16px;
+}
+
+header>div>h1>span#colors>span.color { 
+    display: inline-block;
+    border-radius: 50%;
+    margin-left: 5px;
+    cursor: pointer;
+    border: transparent 1px solid;
+    overflow: clip;
+    opacity: 0.65;
+}
+
+header>div>h1>span#colors>span.color:hover { 
+    opacity: 1;
+}
+
+header>div>h1>span#colors>span.color.selected { 
+    opacity: 1.0;
+    border-color: var(--selected-color);
+}
+
+header>div>h1>span#colors>span.color>span { 
+    display: block;
+    border: black 4px solid;
+    border-radius: 50%;
+    width: 12px;
+    height: 12px;
 }
 
 header nav ul {
@@ -53,6 +205,16 @@ header nav ul {
     margin: 0;
     list-style: none;
     gap: 16px;
+}
+
+footer { 
+    padding-bottom: 24px;
+}
+
+footer > p { 
+    padding-left: 16px;
+    color: var(--light-text-color);
+    font-size: 14px;
 }
 
 main {
@@ -70,7 +232,7 @@ header nav ul > li {
 header nav ul>li>a { 
     display: block;
     padding: 12px 16px;
-    font-size: 12px;
+    font-size: 14px;
     border-radius: 12px;
     border: var(--border);
 }
@@ -79,3 +241,94 @@ header nav ul>li>a:hover {
     background-color: var(--border-color);
 }
 
+header nav ul>li>a>i { 
+    margin-right: 5px;
+}
+
+table { 
+    border-spacing: 0;
+    border: var(--border);  
+    border-radius: 8px;
+}
+
+table.matrix > tr > td { 
+    padding: 4px;
+    width: 12px;
+    height: 12px;
+    font-size: 11px;
+    text-align: center;
+    border-right: var(--border);
+    border-bottom: var(--border);
+    text-align: center;
+}
+
+table.matrix>tr:last-child>td { 
+    border-bottom: none;
+}
+
+table.matrix>tr>td:last-child { 
+    border-right: none;
+}
+
+table.matrix>tr>td>span.legend-color { 
+    display: block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    overflow: clip;
+    margin: auto;
+}
+
+#legend-menu { 
+    display: block;
+    padding-top: 8px;
+}
+
+#legend-menu > a { 
+    display: inline-block;
+    margin-right: 8px;
+    font-size: 12px;
+    background-color: var(--border-color);
+    border-radius: 6px;
+    padding: 6px 12px;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    margin-right: 15px;
+    width: 200px;
+    height: 7px;
+    background: var(--border-color);
+    border-radius: 5px;
+    background-size: 70% 100%;
+    background-repeat: no-repeat;
+}
+
+/* Circle button thingy */
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: var(--link-hover-color);
+    cursor: ew-resize;
+    box-shadow: 0 0 2px 0 white;
+    transition: background .3s ease-in-out;
+}
+
+#controls { 
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 16px;
+    margin-left: 48px;
+}
+
+#controls > a > i { 
+    font-size: 16px;
+    color: var(--text-color);
+}
+
+#controls>a>i:hover { 
+    color: var(--link-hover-color);
+}

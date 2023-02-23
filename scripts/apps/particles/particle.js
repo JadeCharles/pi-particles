@@ -12,13 +12,13 @@ class Particle {
         this.app = app;
         this.debugText = this.id;
         this.colorIndex = (options.color_index >= 0) ?
-            options.color_index % ParticleOptions.colors.length :
-            Math.floor(Math.random() * ParticleOptions.colors.length);
+            options.color_index % ParticleConfig.colors.length :
+            Math.floor(Math.random() * ParticleConfig.colors.length);
         
-        this.diameter = options.diameter || ParticleOptions.defaultDiameter;
+        this.diameter = options.diameter || ParticleConfig.defaultDiameter;
         this.isSelected = options.isSelected === true;
 
-        const particleColor = ParticleOptions.colors[this.colorIndex];
+        const particleColor = ParticleConfig.colors[this.colorIndex];
         this.position = createVector(options.x || 0, options.y || 0);
 
         this.force = (!!options.force && options.force instanceof p5.Vector) ?
@@ -30,30 +30,30 @@ class Particle {
         this.angle = options.angle || 0;
         this.color = color(particleColor.color || "white");
         this.maxVelocity = (typeof options.maxVelocity === "number" ? options.maxVelocity : 0) || 3;
-        this.bubbleColor = options.bubbleColor || ParticleOptions.bubbleColor;
+        this.bubbleColor = options.bubbleColor || ParticleConfig.bubbleColor;
         this.attachments = [];
 
-        this.maxDistance = (options.maxDistance || particleColor.maxDistance) || ParticleOptions.maxDistance;
+        this.maxDistance = (options.maxDistance || particleColor.maxDistance) || ParticleConfig.range;
         this.rectangle = { x: this.position.x - (this.maxDistance / 2), y: this.position.y - (this.maxDistance / 2), width: this.maxDistance, height: this.maxDistance };
 
         this.mass = options.mass || 1;
         this.energy = options.energy || 1;
-        this.eventHorizon = this.diameter * ParticleOptions.personalSpaceMultiplier;
+        this.eventHorizon = this.diameter * ParticleConfig.personalSpaceMultiplier;
         this.peakDistance = (this.maxDistance - 0) / 2.0;
         //console.log("PeakDistance: " + this.peakDistance + " MaxDistance: " + this.maxDistance + " Event Horizon: " + this.eventHorizon + "");
 
         this.onInteraction = typeof options.onInteraction === "function" ? options.onInteraction : Particle.doNothing;
         this.lubrication = options.lubrication >= 0 && options.lubrication <= 1 ?
             options.lubrication :
-            ParticleOptions.lubrication();
+            ParticleConfig.lubrication();
         
         this.gravityLubrication = (options.gravityLubrication || options.gravity_lubrication) || 1;
-        this.bounciness = options.bounciness || (ParticleOptions.bounciness || Math.random());
+        this.bounciness = options.bounciness || (ParticleConfig.bounciness || Math.random());
     }
 
     isOffscreen() { 
         const pos = this.position;
-        return pos.x < 0 || pos.x > this.app.canvasSize.width || pos.y < 0 || pos.y > this.app.canvasSize.height;
+        return pos.x < 0 || pos.x > this.app.width || pos.y < 0 || pos.y > this.app.height;
     }
 
     setAngle(degrees) { 
@@ -66,8 +66,8 @@ class Particle {
     }
 
     setColorIndex(index) {
-        this.colorIndex = index % ParticleOptions.colors.length;
-        const c = ParticleOptions.colors[this.colorIndex];
+        this.colorIndex = index % ParticleConfig.colors.length;
+        const c = ParticleConfig.colors[this.colorIndex];
         this.color = c.color;
         this.maxDistance = c.maxDistance || this.maxDistance;
 
@@ -170,7 +170,7 @@ class Particle {
     
     enforceBoundaryField(forceVector, boundaryMargin = 128) {
         const { x, y } = this.position;
-        const { width, height } = this.app.canvasSize;
+        const { width, height } = this.app;
         
         const farX = width - boundaryMargin;
         const farY = height - boundaryMargin;
@@ -209,20 +209,18 @@ class Particle {
         const force = createVector(0, 0.1);
         const repel = 2 * this.bounciness;
 
-        if (this.position.y > this.app.canvasSize.height - this.diameter) {
+        if (this.position.y > this.app.height - this.diameter) {
             force.y = -this.velocity.y * repel;
         }
 
         if (this.position.x < this.diameter) {
             force.x = Math.abs(this.velocity.x) * repel;
-        } else if (this.position.x > this.app.canvasSize.width - this.diameter) {
+        } else if (this.position.x > this.app.width - this.diameter) {
             force.x = -Math.abs(this.velocity.x) * repel;
         }
 
         this.velocity.add(force).mult(0.999);
 
-        //this.constrainParticlePositionByForce(this.velocity.mult(this.lubrication));
-        //console.log(JSON.stringify(this.velocity, null, 4));
         this.updatePosition();
     };
 
