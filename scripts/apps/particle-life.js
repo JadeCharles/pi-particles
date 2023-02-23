@@ -20,7 +20,6 @@ function createApp() {
     };
 
     app.spawn = (colorIndex, pos = null, options = {}) => {
-        console.log("Spawned particle: " + colorIndex);
         if (colorIndex < 0) {
             colorIndex = app.colorIndexCursor;
             app.colorIndexCursor++;

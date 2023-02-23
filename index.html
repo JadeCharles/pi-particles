@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Particles</title>
+    <script src="scripts/infrastructure/react.production.min.js"></script>
+    <script src="scripts/infrastructure/react-dom.production.min.js"></script>
     <script src="scripts/infrastructure/p5.js"></script>
     <script src="scripts/apps/particle-life.js"></script>
     <script src="scripts/apps/particles/particle-options.js"></script>
@@ -28,7 +30,25 @@
             </nav>
         </div>
     </header>
+
     <main id="main-canvas"></main>
+    <div class="floater" id="legend"></div>
+    <div class="floater" id="settings"></div>
+
+    <script type="text/babel">
+
+    function Panel() {
+        return (<div>
+            <a class="close">X</a>
+            <h1>Particle Explorer</h1>
+            <p>Click to add particl</p>
+        </div>);
+    }
+
+    ReactDOM.render(<Panel />, document.getElementById('legend'));
+
+    </script>
+
     <footer>
         <p>Copyright © 2023</p>
     </footer>
