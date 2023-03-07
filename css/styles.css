@@ -279,6 +279,34 @@ table.matrix>tr>td>span.legend-color {
     margin: auto;
 }
 
+#color-matrix {
+    position: relative;
+    display: inline-block;
+}
+
+#color-matrix span.edit-value { 
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: auto;
+    text-align: center;
+    vertical-align: middle;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    background-color: rgba(0, 0, 0, 0.75);
+    z-index: 15;
+    text-align: center;
+}
+
+#color-matrix span.edit-value > input { 
+    width: 60px;
+    margin: auto;
+}
+
 #legend-menu { 
     display: block;
     padding-top: 8px;

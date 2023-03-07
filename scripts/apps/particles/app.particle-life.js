@@ -39,7 +39,7 @@ class ParticleApp {
         if (typeof index === "string") index = parseInt(index);
         if (typeof index !== "number" || index >= ParticleConfig.colors.length) index = -1;
         if (index === this.selectedIndex) index = -1;
-        
+
         this.selectedIndex = index;
     }
 
@@ -67,6 +67,20 @@ class ParticleApp {
         this.isRunning = !this.isRunning;
         if (typeof this.onPlayToggle === "function")
             this.onPlayToggle(this.isRunning);
+    }
+
+    setAttractionValue(i, j, value) { 
+        if (typeof i === "string") i = parseInt(i);
+        if (typeof j === "string") j = parseInt(j);
+        if (typeof value === "string") value = parseFloat(value);
+
+        if (typeof i !== "number" || typeof j !== "number" || typeof value !== "number") return;
+        if (i < 0 || i >= this.attractionMatrix.length || j < 0 || j >= this.attractionMatrix.length) return;
+
+        this.attractionMatrix[i][j] = value;
+        
+        if (typeof this.onMatrixUpdate === "function")
+            this.onMatrixUpdate({ i, j, value});
     }
 
     /**

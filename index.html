@@ -8,10 +8,10 @@
     <script src="scripts/infrastructure/react-dom.production.min.js"></script>
     <script src="scripts/infrastructure/babel.min.js"></script>
     <script src="scripts/infrastructure/p5.js"></script>
-    <script src="scripts/apps/particles/app.particle-life.js"></script>
-    <script src="scripts/apps/particles/sketch.particle-life.js"></script>
     <script src="scripts/apps/particles/config.particle.js"></script>
     <script src="scripts/apps/particles/particle.js"></script>
+    <script src="scripts/apps/particles/app.particle-life.js"></script>
+    <script src="scripts/apps/particles/sketch.particle-life.js"></script>
 
     <link href="css/awesome/css/fontawesome.min.css" rel="stylesheet" />
     <link href="css/awesome/css/brands.min.css" rel="stylesheet" />
@@ -22,6 +22,8 @@
     <script>
         // This is all the vanilla JS stuff. Basically, all the form element events/values
         // Should probably move this down to the react section at some point.
+        console.warn("Index.html: " + (typeof app).toString());
+        console.warn((app === null).toString());
 
         window.onresize = function() {
             // Inits the app in /scripts/apps/particles/sketch.particle-life.js
@@ -63,7 +65,7 @@
         <div>
             <h1>
                 <span>Particle Live</span>
-                <span class="menu-item" id="legend">
+                <span class="menu-item">
                     <span class="title">Settings</span>
                     <span class="panel">
                         <span class="content">
@@ -189,6 +191,12 @@
 
         function ColorMatrixTable() {
             const [viewState, setViewState] = React.useState(0);
+            const [editCell, setEditCell] = React.useState({ i: -1, j: -1 });
+            const attractionValueRef = React.useRef();
+
+            React.useEffect(() => { 
+                if (typeof app === "undefined" || !app) return;
+            }, [editCell]);
 
             if (viewState < -20) {
                 return (<React.Fragment>Failed to load</React.Fragment>);
@@ -200,11 +208,36 @@
                     setViewState(viewState - 1);
                 }, 500);
             } else {
-                console.log("App is good.");
                 if (typeof app.onMatrixUpdate !== "function")
                     app.onMatrixUpdate = () => setViewState(viewState + 1);
 
                 if (viewState <= 0) setViewState(1);
+            }
+
+            const saveAttractionValue = (e) => {
+                if (!app) return;
+                if (editCell.i < 0 || editCell.j < 0) return;
+
+                const v = parseFloat(attractionValueRef.current.value + "");
+
+                if (!isNaN(v)) {
+                    console.log("Saved Value: " + v);
+                    app.setAttractionValue(editCell.i, editCell.j, v);
+                } else console.warn("Bad Value: " + v);
+
+                setEditCell({ i: -1, j: -1 });
+            }
+
+            const createInput = (i, j) => {
+                const value = app.attractionMatrix[i][j];
+                const onChange = (e) => {
+                    const v = parseFloat(e.target.value);
+                    app.attractionMatrix[i][j] = v;
+                    app.updateAttractionMatrix();
+                    setViewState(viewState + 1);
+                }
+
+                return (<span className="edit-value"><input onBlur={() => saveAttractionValue()} type="number" step="0.01" min="-1" max="1" defaultValue={value} ref={attractionValueRef} /></span>);
             }
 
             const createTable = (app) => {
@@ -231,7 +264,7 @@
 
                     for (let j = 0; j < colors.length; j++) {
                         const value = app.attractionMatrix[i][j];
-                        row.push(<td key={"color-matrix-" + i + "-" + j}>{ value.toFixed(2) }</td>);
+                        row.push(<td onClick={() => setEditCell({ i, j })} key={"color-matrix-" + i + "-" + j}>{ value.toFixed(2) }</td>);
                     }
                     table.push(<tr key={"color-matrix-row-" + i}>{row}</tr>);
                 }
@@ -251,6 +284,10 @@
 
             if (table === null) return (<span>Loading...</span>);
 
+            const editElement = editCell.j >= 0 && editCell.i >= 0 ? 
+                createInput(editCell.i, editCell.j) :
+                null;
+
             return (<React.Fragment>
                 <h3>Attraction Values</h3>
                 { table }
@@ -260,6 +297,7 @@
                     <a onClick={() => setMatrixKey("i")}>Identity (I)</a>
                     <a onClick={() => setMatrixKey("z")}>Zero (Z)</a>
                 </span>
+                { editElement }
             </React.Fragment>);
         }
 

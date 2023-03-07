@@ -13,7 +13,10 @@ let app = null;
  * Implementation of the p5.js setup() function. This is called anytime the html page updates (load, resize, etc.).
  */
 function setup() {
-    if (app === null) app = new ParticleApp();
+    if (app === null) {
+        console.warn("Setup");
+        app = new ParticleApp();
+    }
     else app.updateCanvasSize();
 
     createCanvas(app.width, app.height);    // p5.js function to create the canvas.
