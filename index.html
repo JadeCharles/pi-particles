@@ -29,6 +29,37 @@
 
             <h1 id="particle-life-header">
                 <span>Particle Life</span>
+                
+                <span class="menu-item" id="menu-item-legend">
+                    <span class="title" id="legend">
+                        <label class="shown"><i class="fa-sharp fa-regular fa-caret-down"></i></label>
+                        <label class="not-shown"><i class="fa-sharp fa-regular fa-caret-right"></i></label>
+                        <label>Legend</label>
+                    </span>
+                    <span class="panel" id="legend-panel">
+                        <span class="content">
+                            <span class="stack header">
+                                <strong>Color Count: <strong id="color-count">4</strong></strong>
+                                <p>The number of <u>diffirent</u> colors. Max is 8.</p>
+                                <span><input type="range" min="1" max="8" value="4" onchange="onRangeChange(this, 'setColorCount')" oninput="onRangeViewChange(this, 'color-count')" class="slider" id="color-count-value" /></span>
+                            </span>
+                            <span id="color-matrix"></span>
+
+                            <span class="stack footer keys">
+                                <h3>Shortcut Keys:</h3>
+                                <ul>
+                                    <li>R - Randomize Attractions <span>Random attraction values</span></li>
+                                    <li>I - Invert Attractions <span>Reverse negative/positive values</span></li>
+                                    <li>U - Uniform Attractions <span>Set all values to 1.0</span></li>
+                                    <li>D - Digitize Matrix <span>Attractions are randomly 1.0 or -1.0 only</span></li>
+                                    <li>Z - Zero Values <span>Attractions all 0.0</span></li>
+                                    <li>Esc - Reset <span>Clear all particles</span></li>
+                                </ul>
+                            </span>
+                        </span>
+                    </span>
+                </span>
+
                 <span class="menu-item" id="menu-item-settings">
                     <span class="title" id="settings">
                         <label class="shown"><i class="fa-sharp fa-regular fa-caret-down"></i></label>
@@ -77,35 +108,7 @@
                         </span>
                     </span>
                 </span>
-                <span class="menu-item" id="menu-item-legend">
-                    <span class="title" id="legend">
-                        <label class="shown"><i class="fa-sharp fa-regular fa-caret-down"></i></label>
-                        <label class="not-shown"><i class="fa-sharp fa-regular fa-caret-right"></i></label>
-                        <label>Legend</label>
-                    </span>
-                    <span class="panel" id="legend-panel">
-                        <span class="content">
-                            <span class="stack header">
-                                <strong>Color Count: <strong id="color-count">4</strong></strong>
-                                <p>The number of <u>diffirent</u> colors. Max is 8.</p>
-                                <span><input type="range" min="1" max="8" value="4" onchange="onRangeChange(this, 'setColorCount')" oninput="onRangeViewChange(this, 'color-count')" class="slider" id="color-count-value" /></span>
-                            </span>
-                            <span id="color-matrix"></span>
 
-                            <span class="stack footer keys">
-                                <h3>Shortcut Keys:</h3>
-                                <ul>
-                                    <li>R - Randomize Attractions <span>Random attraction values</span></li>
-                                    <li>I - Invert Attractions <span>Reverse negative/positive values</span></li>
-                                    <li>U - Uniform Attractions <span>Set all values to 1.0</span></li>
-                                    <li>D - Digitize Matrix <span>Attractions are randomly 1.0 or -1.0 only</span></li>
-                                    <li>Z - Zero Values <span>Attractions all 0.0</span></li>
-                                    <li>Esc - Reset <span>Clear all particles</span></li>
-                                </ul>
-                            </span>
-                        </span>
-                    </span>
-                </span>
                 <span id="colors"></span>
                 <span id="controls"></span>
             </h1>
