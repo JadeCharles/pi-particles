@@ -10,6 +10,8 @@ class Particle {
         this.epoc = 0;
         this.tick = 0;
         this.app = app;
+        this.speed = app.speed || 1.0;
+
         this.debugText = this.id;
         this.colorIndex = (options.color_index >= 0) ?
             options.color_index % ParticleConfig.colors.length :
@@ -43,9 +45,13 @@ class Particle {
         //console.log("PeakDistance: " + this.peakDistance + " MaxDistance: " + this.maxDistance + " Event Horizon: " + this.eventHorizon + "");
 
         this.onInteraction = typeof options.onInteraction === "function" ? options.onInteraction : Particle.doNothing;
-        this.lubrication = options.lubrication >= 0 && options.lubrication <= 1 ?
-            options.lubrication :
-            ParticleConfig.lubrication();
+
+        this.lubrication = app.lubrication;
+
+        if (typeof this.lubrication !== "number")
+            this.lubrication = options.lubrication >= 0 && options.lubrication <= 1 ?
+                options.lubrication :
+                ParticleConfig.lubrication();
         
         this.gravityLubrication = (options.gravityLubrication || options.gravity_lubrication) || 1;
         this.bounciness = options.bounciness || (ParticleConfig.bounciness || Math.random());
@@ -130,20 +136,13 @@ class Particle {
         const distance = distanceVector.mag();
         const { force } = this.getForceVector(otherParticle, distanceVector, distance);
 
-        if (typeof this.constrain !== "function") this.constrain = this.enforceBoundaryField;
+        if (typeof this.constrain !== "function")
+            this.constrain = this.enforceBoundaryField;
+
         this.constrain(force, 128);
-
         this.force = force;
-        this.velocity.add(force).limit(this.maxVelocity * 5).mult(this.lubrication);
-
-        // if (distance < this.eventHorizon * 0.75) { 
-        //     const av = this.sketch.attractionMatrix[this.colorIndex][otherParticle.colorIndex];
-        //     if (av > 0.9 && this.colorIndex !== otherParticle.colorIndex) {
-        //         this.eat(otherParticle);
-        //     } else if (av > 0.8) { 
-        //         this.copulateWith(otherParticle);
-        //     }
-        // }
+        
+        this.velocity.add(force).limit(this.maxVelocity * 5.0 * this.speed).mult(this.lubrication);
 
         return 0;
     }
@@ -279,8 +278,8 @@ class Particle {
         this.position.add(this.velocity);
 
         const offset = (this.maxDistance / 2);
-        this.rectangle.x = this.position.x - offset;
-        this.rectangle.y = this.position.y - offset;
+        this.rectangle.x = (this.position.x - offset) * this.speed;
+        this.rectangle.y = (this.position.y - offset) * this.speed;
     }
 
     drawParticle(index, isPaused = false) {

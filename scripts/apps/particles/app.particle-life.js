@@ -7,18 +7,32 @@
  * @requires ParticleApp.js
  */
 class ParticleApp { 
-    constructor(colorCount = 4, elementId = "main-canvas") {
+    constructor(options, ...args) {
+        //colorCount = 4, elementId = "main-canvas", legendElementId = "color-matrix"
+        const colorCount = typeof options === "number" ? options : (options?.colorCount || 2);
+        const elementId = options?.canvasId || (args[0] || "main-canvas");
+        const legendElementId = options?.legendId || (args[1] || "color-matrix");
+        const controlsElementId = options?.controlsId || (args[2] || "controls");
+
+        this.ui = options.ui;
         this.name = "Particle Life v1.0.0";
+        this.stateText = "";
         this.attractionMatrix = ParticleConfig.createRandomAttractionMatrix();
         this.particles = [];
         this.colorCount = colorCount;
         this.spawnMode = 0;
         this.isRunning = true;
+        this.legend = null;
 
         this.selectedIndex = -1;
         this.colorIndexCursor = 0;
         this.elementId = elementId;
+
+        // These are defaults, but will be explicitly set down below to ensure the UI is updated.
+        this.lubrication = 0.0;
+        this.speed = 1.0;
         this.burstCount = 100;
+        this.lubrication = ParticleConfig.lubrication();
 
         // These will be set in the updateCanvasSize() function.
         this.width = 0;
@@ -27,46 +41,194 @@ class ParticleApp {
         this.onMatrixUpdate = null;
         this.onPlayToggle = null;
 
+        this.legendElementId = legendElementId;
+        this.controlsElementId = controlsElementId;
+        this.controls = new AnimationControls(this, { elementId: controlsElementId });
+        
         this.updateCanvasSize(elementId);
         this.addEventListeners();
+
+        const me = this;
+        
+        this.updateLegend = () => { 
+            console.log("Updating legend: " + legendElementId);
+            ParticleLegend.createUi(me, legendElementId);
+        };
+
+        this.updateControls = () => {
+            console.log("Updating Controls: " + controlsElementId);
+            me.controls.display = "";
+            me.controls.updateUi(me);
+        };
+
+        this.updateLegend();
+        this.updateControls();
+
+        this.updateUi(this.colorCount, 'color-count');
+
+        // Call these methods so the UI updates (even though we've already set them)
+        this.setFrictionAmount(ParticleConfig.friction);
+        this.setSpeed(1);
+        this.setColorCount(colorCount);
+        this.setBurstCount(this.burstCount);
+
+        console.log("App constructed with colorCount: " + colorCount);
     };
 
-    clear() { 
+    getDisplay() { 
+        let display = "Paused";
+
+        if (this.isRunning) {
+            display = "Playing";
+            if (this.particles.length === 0) display = "No Particles";
+            else if (this.selectedIndex >= 0) display = ParticleConfig.colors[this.selectedIndex].name + " " + display;
+        }
+
+        return display;
+    }
+
+    onCellClick(e) { 
+        if (!e) e = { type: "unknown" };
+
+        if (e?.type === "cell") { 
+            console.log("Cell clicked good: " + e.row + ", " + e.col + " = " + e.value);
+            return false;
+        }
+
+        if (e.type === "color") { 
+            // Use the variable "app" because this method is sometimes called by a JQuery event handler
+            // which seems to hijack the this variable.
+            app.selectParticleColor(e.index);
+            app.updateControls();
+
+            return false;
+        }
+
+        return true;
+    }
+
+    reset() {
         this.particles = [];
+        this.updateLegend();
+        this.updateControls();
     }
 
     selectParticleColor(index) {
         if (typeof index === "string") index = parseInt(index);
-        if (typeof index !== "number" || index >= ParticleConfig.colors.length) index = -1;
-        if (index === this.selectedIndex) index = -1;
+        if (typeof index !== "number" || index >= this.colorCount) index = -1;
+
+        if (index === this.selectedIndex) { 
+            console.log("Unselected: " + index);
+            index = -1;
+        }
 
         this.selectedIndex = index;
+        console.log("Selected Index: " + index);
+
+        return true;
     }
 
     setBurstCount(count) {
         if (typeof count === "string") count = parseInt(count);
-        if (typeof count !== "number" || count < 1) return;
+        if (typeof count !== "number" || count < 1) return false;
 
         this.burstCount = count;
+        this.updateUi(this.burstCount, 'burst-count');
+        return true;
     }
 
     setColorCount(count) { 
         if (typeof count === "string") count = parseInt(count);
-        if (typeof count !== "number" || count < 1 || count > ParticleConfig.colors.length) return;
+        if (typeof count !== "number" || count < 1 || count > ParticleConfig.colors.length) return false;
+
         this.colorCount = count;
+        this.updateLegend();
+
+        return this.updateUi(this.colorCount, 'color-count');
+    }
+
+    setSpeed(speed = 1.0, updateFormValue = false) { 
+        if (typeof speed === "string") speed = parseFloat(speed);
+
+        if (isNaN(speed) || typeof speed !== "number") { 
+            console.error("Speed value is invalid (" + (typeof speed).toString() + "): " + speed);
+            return false;
+        }
+
+        this.updateAllParticlesValue("speed", speed);
+        this.speed = speed;
+        this.updateUi(this.speed, 'speed-amount');
+        
+        if (updateFormValue)
+            this.updateUiValue(this.speed, 'speed-amount-value');
+        
+        return true;
+    }
+
+    setFrictionAmount(amount) {
+        if (typeof amount === "string") amount = parseFloat(amount);
+        if (typeof amount !== "number" || isNaN(amount)) return false;
+
+        const lube = 1.0 - amount;
+
+        // Update all particle individually
+        // This is because we want to be able to change the friction amount for an individual particle at some point
+        this.updateAllParticlesValue("lubrication", lube);
+        this.lubrication = lube;
+
+        console.log("Lubrication: " + lube.toFixed(4));
+        
+        //this.updateUiValue(amount.toFixed(6), 'friction-amount');
+        this.updateUi(amount, 'friction-amount');
+        return true;
+    }
+
+    updateUiValue(value, elementId) { 
+        if (typeof this.ui?.updateValue === "function")
+            return this.ui.updateValue(value, elementId);
+        
+        return false;
+    }
+
+    updateUi(value, elementId) {
+        if (typeof this.ui?.updateHtml === "function") { 
+            return this.ui.updateHtml(value, elementId);
+        }
+
+        console.error("Failed to update UI (" + elementId + "): " + value);
+        return false;
     }
 
     setSpawnMode(mode) {
         if (typeof mode === "string") mode = parseInt(mode);
-        if (typeof mode !== "number" || isNaN(mode) || mode < 0) return;
+        if (typeof mode !== "number" || isNaN(mode) || mode < 0) { 
+            console.error("Failed to setSpawnMode because mode is invalid: " + mode);
+            return;
+        }
 
         this.spawnMode = mode;
+        console.log("Spawn mode is now: " + mode);
     }
 
     togglePlay() { 
         this.isRunning = !this.isRunning;
         if (typeof this.onPlayToggle === "function")
             this.onPlayToggle(this.isRunning);
+        
+        this.updateControls();
+    }
+
+    updateAllParticlesValue(fieldName, value) { 
+        const particleCount = this.particles.length;
+        if (particleCount <= 0) return 0;
+        if (typeof this.particles[0][fieldName] === "undefined") return -1;
+
+        let i;
+        for (i = 0; i < particleCount; i++) {
+            this.particles[i][fieldName] = value;
+        }
+
+        return i;
     }
 
     setAttractionValue(i, j, value) { 
@@ -136,6 +298,10 @@ class ParticleApp {
         if (colorIndex < 0 && this.selectedIndex >= 0)
             colorIndex = this.selectedIndex;
         
+        if (!options) options = {};
+        if (typeof options.updateControls !== "boolean")
+            options.updateControls = false;
+        
         const randomRange = (options?.randomRange || 30);
 
         for (let i = 0; i < count; i++) {
@@ -149,6 +315,7 @@ class ParticleApp {
         }
 
         app.colorIndexCursor = 0;
+        app.updateControls();
     };
 
     spawn(colorIndex = -1, pos = null, options = null) {
@@ -159,7 +326,9 @@ class ParticleApp {
                 colorIndex = this.colorIndexCursor;
                 this.colorIndexCursor++;
 
-                if (this.colorIndexCursor >= ParticleConfig.colors.length)
+                const maxCount = Math.min(this.colorCount, ParticleConfig.colors.length);
+
+                if (this.colorIndexCursor >= maxCount)
                     this.colorIndexCursor = 0;
             }
         }
@@ -181,7 +350,11 @@ class ParticleApp {
         }
 
         const particle = new Particle(this, options);
+        
         this.particles.push(particle);
+
+        if (options.updateControls !== false)
+            this.updateControls();
 
         return particle;
     }
@@ -197,6 +370,10 @@ class ParticleApp {
                 break;
             case "i":
             case "keyi":
+                this.attractionMatrix = ParticleConfig.invertAttractionMatrix(this.attractionMatrix);
+                break;
+            case "d":
+            case "keyd":
                 this.attractionMatrix = ParticleConfig.createPositiveOrNegativeAttractionMatrix();
                 break;
             case "u":
@@ -207,13 +384,21 @@ class ParticleApp {
             case "keyz":
                 this.attractionMatrix = ParticleConfig.createZeroAttractionMatrix();
                 break;
+            case "escape":
+                if (this.ui.isMenuItemOpen()) this.ui.closeMenus();
+                else this.reset();
+
+                break;
             default:
+                console.log("Key Press: " + key);
                 key = null;
                 break;
         }
 
-        if (typeof this.onMatrixUpdate === "function")
+        this.updateLegend();
+        if (typeof this.onMatrixUpdate === "function") { 
             this.onMatrixUpdate(key);
+        }
     }
 
     updatePhysics() { 

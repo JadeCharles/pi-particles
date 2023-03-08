@@ -4,104 +4,106 @@
 <head>
     <meta charset="UTF-8">
     <title>Particle Life</title>
-    <script src="scripts/infrastructure/react.production.min.js"></script>
-    <script src="scripts/infrastructure/react-dom.production.min.js"></script>
-    <script src="scripts/infrastructure/babel.min.js"></script>
+    <script src="scripts/infrastructure/jquery-3.6.3.min.js"></script>
     <script src="scripts/infrastructure/p5.js"></script>
     <script src="scripts/apps/particles/config.particle.js"></script>
     <script src="scripts/apps/particles/particle.js"></script>
     <script src="scripts/apps/particles/app.particle-life.js"></script>
     <script src="scripts/apps/particles/sketch.particle-life.js"></script>
 
-    <link href="css/awesome/css/fontawesome.min.css" rel="stylesheet" />
-    <link href="css/awesome/css/brands.min.css" rel="stylesheet" />
-    <link href="css/awesome/css/solid.min.css" rel="stylesheet" />
-
+    <link href="css/fontawesome/css/fontawesome.min.css" rel="stylesheet">
+    <link href="css/fontawesome/css/brands.min.css" rel="stylesheet">
+    <link href="css/fontawesome/css/solid.min.css" rel="stylesheet">
+    
     <link href="css/styles.css" type="text/css" rel="stylesheet" />
-
-    <script>
-        // This is all the vanilla JS stuff. Basically, all the form element events/values
-        // Should probably move this down to the react section at some point.
-        console.warn("Index.html: " + (typeof app).toString());
-        console.warn((app === null).toString());
-
-        window.onresize = function() {
-            // Inits the app in /scripts/apps/particles/sketch.particle-life.js
-            setup();
-        }
-
-        function appIsGood() { 
-            return typeof app !== "undefined" && !!app;
-        }
-
-        function onRangeViewChange(input, viewId) { 
-            if (!input) return;
-            const element = document.getElementById(viewId || "");
-            if (!!element) element.innerHTML = input.value;
-        }
-
-        function onRangeChange(input, func) { 
-            if (!input) return;
-            if (typeof func !== "string") return;
-
-            app[func](input.value);
-        }
-
-        function onSpawnModeChange(e) { 
-            if (!appIsGood()) return;
-            app.setSpawnMode(e.value);
-        }
-
-        function clearParticles() { 
-            if (!appIsGood()) return;
-            app.clear();
-        }
-
-    </script>
 </head>
 
 <body>
     <header>
         <div>
-            <h1>
-                <span>Particle Live</span>
-                <span class="menu-item">
-                    <span class="title">Settings</span>
-                    <span class="panel">
+            <div id="ui-container" style="display:none;">
+                <div id="ui-legend">
+
+                </div>
+            </div>
+
+            <h1 id="particle-life-header">
+                <span>Particle Life</span>
+                <span class="menu-item" id="menu-item-settings">
+                    <span class="title" id="settings">
+                        <label class="shown"><i class="fa-sharp fa-regular fa-caret-down"></i></label>
+                        <label class="not-shown"><i class="fa-sharp fa-regular fa-caret-right"></i></label>
+                        <label>Settings</label>
+                    </span>
+                    <span class="panel" id="settings-panel">
                         <span class="content">
                             <ul>
                                 <li>
                                     <span class="stack">
-                                        <strong>Color Count: <strong id="color-count-value">4</strong></strong>
-                                        <p>The number of <u>diffirent</u> colors. Max is 8.</p>
-                                        <span><input type="range" min="1" max="8" value="4" onchange="onRangeChange(this, 'setColorCount')" oninput="onRangeViewChange(this, 'color-count-value')" class="slider" id="particle-count" /></span>
+                                        <strong>Speed: <strong id="speed-amount">0.0</strong></strong>
+                                        <p>Multiplier of the speed of the particles. 0=Frozen, 1=Normal Sped, 2=Double Speed</p>
+                                        <span><input type="range" min="0" max="3.0" value="1.0" step="0.1" onchange="onRangeChange(this, 'setSpeed')" oninput="onRangeViewChange(this, 'speed-amount')" class="slider" id="speed-amount-value" /></span>
                                     </span>
                                 </li>
+                                
                                 <li>
                                     <span class="stack">
-                                        <strong>Burst Count: <strong id="burst-value">100</strong></strong>
-                                        <p>The number of particles spawned on right mouse click (left click spawns a single particle)</p>
-                                        <span><input type="range" min="2" max="400" value="100" onchange="onRangeChange(this, 'setBurstCount')" oninput="onRangeViewChange(this, 'burst-value')" class="slider" id="particle-count" /></span>
+                                        <strong>Friction: <strong id="friction-amount">0.0</strong></strong>
+                                        <p>How non-slipery the environment is.</p>
+                                        <span><input type="range" min="0" max="1.0" value="0.001" step="0.0005" onchange="onRangeChange(this, 'setFrictionAmount')" oninput="onRangeViewChange(this, 'friction-amount')" class="slider" id="friction-amount-value" /></span>
                                     </span>
                                 </li>
+
                                 <li>
                                     <span class="stack">
                                         <strong>Spawn Mode:</strong>
                                         <p>This determines how particles spawn. Some cool effects going on here.</p>
                                         <span><select id="spawn-mode" onchange="onSpawnModeChange(this)">
-                                            <option value="0">Right/Left Click</option>
-                                            <option value="1">Mouse Drag</option>
-                                        </select></span>
+                                                <option value="0">Right/Left Click</option>
+                                                <option value="1">Mouse Drag</option>
+                                            </select></span>
                                     </span>
                                 </li>
+
+                                <li>
+                                    <span class="stack">
+                                        <strong>Burst Count: <strong id="burst-count">100</strong></strong>
+                                        <p>The number of particles spawned on right mouse click (left click spawns a single particle)</p>
+                                        <span><input type="range" min="2" max="400" value="100" onchange="onRangeChange(this, 'setBurstCount')" oninput="onRangeViewChange(this, 'burst-count')" class="slider" id="burst-count-value" /></span>
+                                    </span>
+                                </li>
+
                             </ul>
                         </span>
                     </span>
                 </span>
-                <span class="menu-item" id="settings">
-                    <span class="title">Legend</span>
-                    <span class="panel">
-                        <span class="content" id="color-matrix"></span>
+                <span class="menu-item" id="menu-item-legend">
+                    <span class="title" id="legend">
+                        <label class="shown"><i class="fa-sharp fa-regular fa-caret-down"></i></label>
+                        <label class="not-shown"><i class="fa-sharp fa-regular fa-caret-right"></i></label>
+                        <label>Legend</label>
+                    </span>
+                    <span class="panel" id="legend-panel">
+                        <span class="content">
+                            <span class="stack header">
+                                <strong>Color Count: <strong id="color-count">4</strong></strong>
+                                <p>The number of <u>diffirent</u> colors. Max is 8.</p>
+                                <span><input type="range" min="1" max="8" value="4" onchange="onRangeChange(this, 'setColorCount')" oninput="onRangeViewChange(this, 'color-count')" class="slider" id="color-count-value" /></span>
+                            </span>
+                            <span id="color-matrix"></span>
+
+                            <span class="stack footer keys">
+                                <h3>Shortcut Keys:</h3>
+                                <ul>
+                                    <li>R - Randomize Attractions <span>Random attraction values</span></li>
+                                    <li>I - Invert Attractions <span>Reverse negative/positive values</span></li>
+                                    <li>U - Uniform Attractions <span>Set all values to 1.0</span></li>
+                                    <li>D - Digitize Matrix <span>Attractions are randomly 1.0 or -1.0 only</span></li>
+                                    <li>Z - Zero Values <span>Attractions all 0.0</span></li>
+                                    <li>Esc - Reset <span>Clear all particles</span></li>
+                                </ul>
+                            </span>
+                        </span>
                     </span>
                 </span>
                 <span id="colors"></span>
@@ -120,201 +122,83 @@
     <main id="main-canvas"></main>
 
     <footer>
-        <p>v1.0.0</p>
+        <p id="legend-test">v1.0.0</p>
     </footer>
 
-    <script type="text/babel">
-        // This is all the React UI stuff.
+    <script src="scripts/infrastructure/ui/ui.js"></script>
+    <script src="scripts/infrastructure/ui/animation-controls.js"></script>
+    <script src="scripts/apps/particles/ui/particle-legend.js"></script>
 
-        function ParticleColorElements() {
-            const [selectedIndex, setSelectedIndex] = React.useState(-1);
+    <script>
+        /**
+        * This is all the form event handlers and value setters
+        */
 
-            const onClick = (index, e) => {
-                if (!app) {
-                    console.error("App is not initialized.");
-                    return;
-                }
+        // Options for the app. See /scripts/apps/particles/app.particle-life.js       
+        appOptions = { colorCount: 3, ui: new Ui() };
 
-                if (selectedIndex === index) { 
-                    setSelectedIndex(-1);
-                    return;
-                }
-
-                const color = ParticleConfig.colors[index];
-                console.log(color.name);
-
-                app.selectParticleColor(index);
-
-                setSelectedIndex(index);
+        window.onresize = function () {
+            // Inits the app in /scripts/apps/particles/sketch.particle-life.js
+            if (appIsGood()) {
+                if (typeof app.updateLegend === "function")
+                    app.updateLegend();
+                    
+                if (typeof app.updateLegend === "function") 
+                    app.updateUi(app.colorCount, 'color-count');
             }
 
-            const colors = ParticleConfig.colors.map((color, index) => {
-                const cn = index === selectedIndex ? "color selected" : "color";
-
-                return (<span onClick={(e) => onClick(index, e)} key={"color-" + index} className={cn}>
-                    <span style={{ backgroundColor: color.color }}></span>
-                </span>);
-            });
-
-            return (<React.Fragment>{colors}</React.Fragment>);
+            setup();
         }
 
-        function PayerControls() {
-            const [viewState, setViewState] = React.useState(0);
+        function appIsGood() {
+            const isGood = typeof app !== "undefined" && !!app;
+            if (!isGood) console.error("The global app is not defined.");
 
-            const refresh = () => { 
-                const v = (viewState > 100) ? 0 : viewState;
-                setViewState(viewState + 1);
-            }
-
-            const toggle = (e) => {
-                if (!app) return;
-                app.togglePlay();
-                refresh();
-            }
-
-            const clear = (e) => {
-                if (!app) return;
-                app.clear();
-                refresh();
-            }
-
-            const playButton = typeof app === "undefined" || !app || app.isRunning === true ? 
-                (<i class="fa-solid fa-pause"></i>) :
-                (<i class="fa-solid fa-play"></i>);
-
-            return (<React.Fragment>
-                <a onClick={() => toggle()} class="button" title="Toggle Play/Pause">{ playButton }</a>
-                <a onClick={() => clear()} class="button" title="Clear Canvas"><i class="fa-solid fa-trash-can"></i></a>
-            </React.Fragment>);
+            return isGood;
         }
 
-        function ColorMatrixTable() {
-            const [viewState, setViewState] = React.useState(0);
-            const [editCell, setEditCell] = React.useState({ i: -1, j: -1 });
-            const attractionValueRef = React.useRef();
+        // Update ui stuff
+        function onRangeViewChange(input, viewId) {
+            if (!input) return;
 
-            React.useEffect(() => { 
-                if (typeof app === "undefined" || !app) return;
-            }, [editCell]);
-
-            if (viewState < -20) {
-                return (<React.Fragment>Failed to load</React.Fragment>);
-            }
-
-            if (typeof app === "undefined" || !app) { 
-                setTimeout(() => {
-                    console.log("App is not initialized. Retrying..");
-                    setViewState(viewState - 1);
-                }, 500);
-            } else {
-                if (typeof app.onMatrixUpdate !== "function")
-                    app.onMatrixUpdate = () => setViewState(viewState + 1);
-
-                if (viewState <= 0) setViewState(1);
-            }
-
-            const saveAttractionValue = (e) => {
-                if (!app) return;
-                if (editCell.i < 0 || editCell.j < 0) return;
-
-                const v = parseFloat(attractionValueRef.current.value + "");
-
-                if (!isNaN(v)) {
-                    console.log("Saved Value: " + v);
-                    app.setAttractionValue(editCell.i, editCell.j, v);
-                } else console.warn("Bad Value: " + v);
-
-                setEditCell({ i: -1, j: -1 });
-            }
-
-            const createInput = (i, j) => {
-                const value = app.attractionMatrix[i][j];
-                const onChange = (e) => {
-                    const v = parseFloat(e.target.value);
-                    app.attractionMatrix[i][j] = v;
-                    app.updateAttractionMatrix();
-                    setViewState(viewState + 1);
-                }
-
-                return (<span className="edit-value"><input onBlur={() => saveAttractionValue()} type="number" step="0.01" min="-1" max="1" defaultValue={value} ref={attractionValueRef} /></span>);
-            }
-
-            const createTable = (app) => {
-                if (!app || !app.attractionMatrix) return;
-
-                const table = [];
-                const colors = ParticleConfig.colors;
-                
-                if (!Array.isArray(colors)) return;
-
-                const header = [<td key={"color-matrix-header"}>.</td>];
-
-                for (let i = 0; i < colors.length; i++) {
-                    const color = colors[i].color;
-                    const style = { backgroundColor: color };
-                    header.push(<td key={"color-header-item-" + i}><span style={style} className="legend-color"></span></td>);
-                }
-
-                table.push(<tr key={"color-matrix-header"}>{header}</tr>);
-
-                for (let i = 0; i < colors.length; i++) {
-                    let style = { backgroundColor: colors[i].color };
-                    const row = [<td key={"color-matrix-row" + i}><span style={style} className="legend-color"></span></td>];
-
-                    for (let j = 0; j < colors.length; j++) {
-                        const value = app.attractionMatrix[i][j];
-                        row.push(<td onClick={() => setEditCell({ i, j })} key={"color-matrix-" + i + "-" + j}>{ value.toFixed(2) }</td>);
-                    }
-                    table.push(<tr key={"color-matrix-row-" + i}>{row}</tr>);
-                }
-
-                return (<table className={"matrix"}>{ table }</table>);
-            }
-
-            const setMatrixKey = (key) => {
-                if (typeof app === "undefined" || !app) return;
-                app.setAttractionMatrix(key);
-                setViewState(viewState + 1);
-            }
-
-            const table = viewState > 0 ? 
-                createTable(app) :
-                null;
-
-            if (table === null) return (<span>Loading...</span>);
-
-            const editElement = editCell.j >= 0 && editCell.i >= 0 ? 
-                createInput(editCell.i, editCell.j) :
-                null;
-
-            return (<React.Fragment>
-                <h3>Attraction Values</h3>
-                { table }
-                <span id="legend-menu">
-                    <a onClick={() => setMatrixKey("r")}>Random (R)</a>
-                    <a onClick={() => setMatrixKey("u")}>Uniform (U)</a>
-                    <a onClick={() => setMatrixKey("i")}>Identity (I)</a>
-                    <a onClick={() => setMatrixKey("z")}>Zero (Z)</a>
-                </span>
-                { editElement }
-            </React.Fragment>);
+            const element = document.getElementById(viewId || "");
+            if (!!element) element.innerHTML = input.value;
         }
 
-        ReactDOM.render(
-            <ParticleColorElements />,
-            document.getElementById('colors')
-        );
+        // Feed values into the app methods stuff
+        function onRangeChange(input, func) {
+            if (!input) {
+                console.warn("onRangeChange: input is invalid");
+                return;
+            }
 
-        ReactDOM.render(
-            <PayerControls />,
-            document.getElementById('controls')
-        )
+            if (typeof func !== "string") {
+                console.warn("onRangeChange: func is not a string");
+                return;
+            }
 
-        ReactDOM.render(
-            <ColorMatrixTable />,
-            document.getElementById('color-matrix')
-        );
+            if (typeof app[func] !== "function") {
+                console.error("onRangeChange: app." + func + " is not a function");
+                return;
+            }
+
+            app[func](input.value);
+        }
+
+        // Kinda one-off, but whatevers
+        function onSpawnModeChange(e) {
+            if (!appIsGood()) {
+                console.warn("App isn't initialized yet");
+                return;
+            }
+
+            if (typeof app.setSpawnMode !== "function") {
+                console.error("onSpawnModeChange: app.setSpawnMode is not a function");
+                return;
+            }
+
+            app.setSpawnMode(e.value);
+        }
 
     </script>
 </body>

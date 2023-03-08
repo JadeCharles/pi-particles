@@ -8,7 +8,7 @@ https://p5js.org/
 Inspired by this video (which looks way better than mine).
 https://www.youtube.com/watch?v=p4YirERTVF0
 
-Mostly pure JavaScript, but used some React for the UI controls. The dependencies are included in the project (not CDN) so it should work out the box.
+Mostly pure JavaScript, but used JQuery for the UI controls. The dependencies are included in the project's `/scripts` directory (not CDN) so it should work out the box.
 [Try it](./index.html)
 
 Only tested in Chrome, so no guarantees on other browsers :/
@@ -23,6 +23,10 @@ Click one of the colors in the top panel to set the color (click the same color 
 Keyboard: Press `r` to re-randomize the attraction values, press `u` to set all the attraction values to 1.0 (they'll lump into a ball, like a planet)
 
 There's an invisible force field around the edges of the canvas to keep the particles in the visible area (camera view coming later)
+
+## Coding Pattern Notes
+
+Since JQuery is used for most of the UI, it has a tendancy to hijack the "this" variable, so referencing the global "app" variable makes more sense
 
 ## Coming Soon (i.e, when time permits)
 

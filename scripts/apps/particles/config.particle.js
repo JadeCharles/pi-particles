@@ -36,7 +36,7 @@ class ParticleConfig {
      * Percent value. This will slow the particles down by 3% per second, so they don't fly all over the place. 
      * Set this to zero to see some funky stuff.
      */
-    static friction = 0.1; // 0.03;
+    static friction = 0.0075; // 0.03;
 
     static lubrication = () => 1 - ParticleConfig.friction;
 
@@ -201,6 +201,10 @@ class ParticleConfig {
         }
 
         return matrix;
+    }
+
+    static invertAttractionMatrix(matrix) { 
+        return matrix.map(row => row.map(val => val * -1));
     }
 
 }

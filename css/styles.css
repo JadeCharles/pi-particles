@@ -1,6 +1,7 @@
 :root { 
     --background-color: black;
-    --text-color: #DDD;  
+    --text-color: #DDD;
+    --text-color-faded: #666;
     --input-text-color: #AAA;
     --light-text-color: #FFFFFF66;
     --link-color: rgb(159, 255, 255);
@@ -87,9 +88,39 @@ header>div>h1>span.menu-item>.panel {
     z-index: 12;
 }
 
-header>div>h1>span.menu-item>.panel.show,
-header>div>h1>span.menu-item:hover>.panel { 
+header>div>h1>span.menu-item.show>.panel { 
     display: inline-block;
+}
+
+header>div>h1>span.menu-item>.title { 
+    user-select: none!important;
+    cursor: pointer;
+}
+
+header>div>h1>span.menu-item>.title>label { 
+    cursor: pointer;
+    display: inline-block;
+    width: 12px;
+}
+
+header>div>h1>span.menu-item>.title>label:last-child { 
+    width: unset;
+}
+
+header>div>h1>span.menu-item.show>.title>label.not-shown {
+    display: none;
+}
+
+header>div>h1>span.menu-item.show>.title>label.shown {
+    display: inline-block;
+}
+
+header>div>h1>span.menu-item>.title>label.not-shown {
+    display: inline-block;
+}
+
+header>div>h1>span.menu-item>.title>label.shown {
+    display: none;
 }
 
 header>div>h1>span.menu-item>.panel>.content { 
@@ -123,25 +154,49 @@ header>div>h1>span.menu-item>.panel>.content ul>li:last-child {
     margin-bottom: 0;
 }
 
-header>div>h1>span.menu-item>.panel>.content li span.stack { 
+span.stack { 
     display: block;
 }
 
-header>div>h1>span.menu-item>.panel>.content li span.stack > span {
+span.stack.header { 
+    margin-bottom: 12px;
+}
+
+span.stack.footer { 
+    padding-top: 12px;
+    margin-top: 12px;
     display: block;
 }
 
-header>div>h1>span.menu-item>.panel>.content li span.stack>strong { 
+header>div>h1>span.menu-item>.panel>.content span.stack.footer ul>li { 
+    font-size: 13px;
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+    border-bottom: var(--border-color) 1px dashed;
+    color: var(--text-color);
+}
+
+header>div>h1>span.menu-item>.panel>.content span.stack.footer ul>li > span:last-child { 
+    font-size: 11px;
+    display: inline-block;
+    color: var(--text-color-faded);
+}
+
+span.stack > span {
+    display: block;
+}
+
+span.stack>strong { 
     display: block;
     font-size: 14px;
     margin: 0;
     padding-bottom: 8px;
 }
-header>div>h1>span.menu-item>.panel>.content li span.stack>strong>strong { 
+span.stack>strong>strong { 
     color: var(--link-color);
 }
 
-header>div>h1>span.menu-item>.panel>.content li span.stack > p {
+span.stack > p {
     display: block;
     font-size: 11px;
     color: var(--light-text-color);
@@ -252,10 +307,10 @@ table {
 }
 
 table.matrix > tr > td { 
-    padding: 4px;
-    width: 12px;
+    padding: 6px 8px;
+    width: 24px;
     height: 12px;
-    font-size: 11px;
+    font-size: 13px;
     text-align: center;
     border-right: var(--border);
     border-bottom: var(--border);
@@ -348,15 +403,34 @@ input[type="range"]::-webkit-slider-thumb {
     display: flex;
     justify-content: flex-end;
     align-items: center;
+    align-content: center;
     gap: 16px;
     margin-left: 48px;
+    font-size: 12px;
 }
 
-#controls > a > i { 
-    font-size: 16px;
+#controls>* {
+    border:#FFFFFF01 1px solid;
+}
+
+#controls > span.control-display { 
+    width: 120px;
+    text-align: end;
+    margin-right: 12px;
     color: var(--text-color);
 }
 
-#controls>a>i:hover { 
+#controls > span.control { 
+    font-size: 16px;
+    padding: 0;
+}
+
+#controls > span.control > i { 
+    color: var(--text-color);
+    cursor: pointer;
+    line-height: 0;
+}
+
+#controls>span.control>i:hover { 
     color: var(--link-hover-color);
 }

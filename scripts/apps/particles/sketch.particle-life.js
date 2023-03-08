@@ -8,16 +8,17 @@
  */
 
 let app = null;
+let appOptions = { colorCount: 5 };
 
 /**
  * Implementation of the p5.js setup() function. This is called anytime the html page updates (load, resize, etc.).
  */
 function setup() {
     if (app === null) {
-        console.warn("Setup");
-        app = new ParticleApp();
+        app = new ParticleApp(appOptions);
+    } else if (typeof app.updateCanvasSize === "function") { 
+        app.updateCanvasSize();
     }
-    else app.updateCanvasSize();
 
     createCanvas(app.width, app.height);    // p5.js function to create the canvas.
 }
@@ -40,7 +41,14 @@ function draw() {
     text("Count: " + result.count, 10, 20);
 }
 
-function mouseEvent(button, mx, my) { 
+function mouseEvent(button, mx, my) {
+    if (!!app) {
+        if (app.ui.isMenuItemOpen()) { 
+            app.ui.closeMenus();
+            return true;
+        }
+    }
+
     switch (button) { 
         case 2: // Right click.
             app.spawnMany(-1, -1, { x: mx, y: my });
