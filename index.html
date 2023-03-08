@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Particle Life</title>
+    <script src="scripts/infrastructure/jquery-3.6.3.min.js"></script>
+    <script src="scripts/infrastructure/p5.js"></script>
+    <script src="scripts/apps/particles/config.particle.js"></script>
+    <script src="scripts/apps/particles/particle.js"></script>
+    <script src="scripts/apps/particles/app.particle-life.js"></script>
+    <script src="scripts/apps/particles/sketch.particle-life.js"></script>
+
+    <link href="css/fontawesome/css/fontawesome.min.css" rel="stylesheet">
+    <link href="css/fontawesome/css/brands.min.css" rel="stylesheet">
+    <link href="css/fontawesome/css/solid.min.css" rel="stylesheet">
+    
+    <link href="css/styles.css" type="text/css" rel="stylesheet" />
+</head>
+
+<body>
+    <header>
+        <div>
+            <div id="ui-container" style="display:none;">
+                <div id="ui-legend">
+
+                </div>
+            </div>
+
+            <h1 id="particle-life-header">
+                <span>Particle Life</span>
+                
+                <span class="menu-item" id="menu-item-legend">
+                    <span class="title" id="legend">
+                        <label class="shown"><i class="fa-sharp fa-regular fa-caret-down"></i></label>
+                        <label class="not-shown"><i class="fa-sharp fa-regular fa-caret-right"></i></label>
+                        <label>Legend</label>
+                    </span>
+                    <span class="panel" id="legend-panel">
+                        <span class="content">
+                            <span class="stack header">
+                                <strong>Color Count: <strong id="color-count">4</strong></strong>
+                                <p>The number of <u>diffirent</u> colors. Max is 8.</p>
+                                <span><input type="range" min="1" max="8" value="4" onchange="onRangeChange(this, 'setColorCount')" oninput="onRangeViewChange(this, 'color-count')" class="slider" id="color-count-value" /></span>
+                            </span>
+                            <span id="color-matrix"></span>
+
+                            <span class="stack footer keys">
+                                <h3>Shortcut Keys:</h3>
+                                <ul>
+                                    <li>R - Randomize Attractions <span>Random attraction values</span></li>
+                                    <li>I - Invert Attractions <span>Reverse negative/positive values</span></li>
+                                    <li>U - Uniform Attractions <span>Set all values to 1.0</span></li>
+                                    <li>D - Digitize Matrix <span>Attractions are randomly 1.0 or -1.0 only</span></li>
+                                    <li>Z - Zero Values <span>Attractions all 0.0</span></li>
+                                    <li>Esc - Reset <span>Clear all particles</span></li>
+                                </ul>
+                            </span>
+                        </span>
+                    </span>
+                </span>
+
+                <span class="menu-item" id="menu-item-settings">
+                    <span class="title" id="settings">
+                        <label class="shown"><i class="fa-sharp fa-regular fa-caret-down"></i></label>
+                        <label class="not-shown"><i class="fa-sharp fa-regular fa-caret-right"></i></label>
+                        <label>Settings</label>
+                    </span>
+                    <span class="panel" id="settings-panel">
+                        <span class="content">
+                            <ul>
+                                <li>
+                                    <span class="stack">
+                                        <strong>Speed: <strong id="speed-amount">0.0</strong></strong>
+                                        <p>Multiplier of the speed of the particles. 0=Frozen, 1=Normal Sped, 2=Double Speed</p>
+                                        <span><input type="range" min="0" max="3.0" value="1.0" step="0.1" onchange="onRangeChange(this, 'setSpeed')" oninput="onRangeViewChange(this, 'speed-amount')" class="slider" id="speed-amount-value" /></span>
+                                    </span>
+                                </li>
+                                
+                                <li>
+                                    <span class="stack">
+                                        <strong>Friction: <strong id="friction-amount">0.0</strong></strong>
+                                        <p>How non-slipery the environment is.</p>
+                                        <span><input type="range" min="0" max="1.0" value="0.001" step="0.0005" onchange="onRangeChange(this, 'setFrictionAmount')" oninput="onRangeViewChange(this, 'friction-amount')" class="slider" id="friction-amount-value" /></span>
+                                    </span>
+                                </li>
+
+                                <li>
+                                    <span class="stack">
+                                        <strong>Spawn Mode:</strong>
+                                        <p>This determines how particles spawn. Some cool effects going on here.</p>
+                                        <span><select id="spawn-mode" onchange="onSpawnModeChange(this)">
+                                                <option value="0">Right/Left Click</option>
+                                                <option value="1">Mouse Drag</option>
+                                            </select></span>
+                                    </span>
+                                </li>
+
+                                <li>
+                                    <span class="stack">
+                                        <strong>Burst Count: <strong id="burst-count">100</strong></strong>
+                                        <p>The number of particles spawned on right mouse click (left click spawns a single particle)</p>
+                                        <span><input type="range" min="2" max="400" value="100" onchange="onRangeChange(this, 'setBurstCount')" oninput="onRangeViewChange(this, 'burst-count')" class="slider" id="burst-count-value" /></span>
+                                    </span>
+                                </li>
+
+                            </ul>
+                        </span>
+                    </span>
+                </span>
+
+                <span id="colors"></span>
+                <span id="controls"></span>
+            </h1>
+
+            <nav>
+                <ul>
+                    <li><a href="https://www.jadecharles.com/" target="_jade"><i class="fa-solid fa-user"></i> JadeCharles.com</a></li>
+                    <li><a href="https://www.penumbralabs.io" target="_pi"><i class="fa-solid fa-flask"></i> PenumbraLabs.io</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main-canvas"></main>
+
+    <footer>
+        <p id="legend-test">v1.0.0</p>
+    </footer>
+
+    <script src="scripts/infrastructure/ui/ui.js"></script>
+    <script src="scripts/infrastructure/ui/animation-controls.js"></script>
+    <script src="scripts/apps/particles/ui/particle-legend.js"></script>
+
+    <script>
+        /**
+        * This is all the form event handlers and value setters
+        */
+
+        // Options for the app. See /scripts/apps/particles/app.particle-life.js       
+        appOptions = { colorCount: 3, ui: new Ui() };
+
+        window.onresize = function () {
+            // Inits the app in /scripts/apps/particles/sketch.particle-life.js
+            if (appIsGood()) {
+                if (typeof app.updateLegend === "function")
+                    app.updateLegend();
+                    
+                if (typeof app.updateLegend === "function") 
+                    app.updateUi(app.colorCount, 'color-count');
+            }
+
+            setup();
+        }
+
+        function appIsGood() {
+            const isGood = typeof app !== "undefined" && !!app;
+            if (!isGood) console.error("The global app is not defined.");
+
+            return isGood;
+        }
+
+        // Update ui stuff
+        function onRangeViewChange(input, viewId) {
+            if (!input) return;
+
+            const element = document.getElementById(viewId || "");
+            if (!!element) element.innerHTML = input.value;
+        }
+
+        // Feed values into the app methods stuff
+        function onRangeChange(input, func) {
+            if (!input) {
+                console.warn("onRangeChange: input is invalid");
+                return;
+            }
+
+            if (typeof func !== "string") {
+                console.warn("onRangeChange: func is not a string");
+                return;
+            }
+
+            if (typeof app[func] !== "function") {
+                console.error("onRangeChange: app." + func + " is not a function");
+                return;
+            }
+
+            app[func](input.value);
+        }
+
+        // Kinda one-off, but whatevers
+        function onSpawnModeChange(e) {
+            if (!appIsGood()) {
+                console.warn("App isn't initialized yet");
+                return;
+            }
+
+            if (typeof app.setSpawnMode !== "function") {
+                console.error("onSpawnModeChange: app.setSpawnMode is not a function");
+                return;
+            }
+
+            app.setSpawnMode(e.value);
+        }
+
+    </script>
+</body>
+
+</html>
