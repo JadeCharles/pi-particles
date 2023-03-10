@@ -25,7 +25,14 @@ class TentacleApp {
         this.addEventListeners();
     }
 
-    createTentacle(pos, segmentCount = 5) { 
+    /**
+     * 
+     * @param {object} pos - Position object { x: number, y: number }
+     * @param {number} segmentCount - Number of tentacle segments (the higher the number, the more fluid the tentacle)
+     * @param {number} segmentLength - Length of each segment (the smaller the number, the more fluid the tentacle)
+     * @returns 
+     */
+    createTentacle(pos, segmentCount = 5, segmentLength = 50) { 
         if (!this.mounted) {
             console.error("App not mounted yet");
             return null;
@@ -43,7 +50,7 @@ class TentacleApp {
         for (let i = 0; i < segmentCount; i++) {
             const m = Math.floor(Math.random() * 10) % 2 === 0 ? 1 : -1;
             const angle = (Math.random() * Math.PI) * m;
-            const segmentOptions = { x: pos.x, y: pos.y, angle: angle, length: 60, colorIndex: i % colorCount };
+            const segmentOptions = { x: pos.x, y: pos.y, angle: angle, length: segmentLength, colorIndex: i % colorCount };
             cursor = tentacle.appendSegment(segmentOptions);
         }
 
@@ -73,6 +80,13 @@ class TentacleApp {
         // Generally add keyboard event handlers
         document.addEventListener("keydown", (e) => {
             // Handle Key Press
+            const k = e.key.toLowerCase();
+            switch (k) {
+                case "escape":
+                    break;
+                case "h":
+                    break;
+            }
         });
 
         console.log("Added event listeners");

@@ -37,8 +37,17 @@ function draw() {
     // Set pen color to white
     fill(255);
 
+    // Draw mouse cursor:
+    if (typeof app.lastMouseX === "number") { 
+        noFill();
+        stroke("#FFFFFF88");
+        strokeWeight(1);
+        ellipse(app.lastMouseX, app.lastMouseY, 32, 32);
+        fill("white");
+        ellipse(app.lastMouseX, app.lastMouseY, 4, 4);
+    }
+
     // Draw the top label/caption
-    text("Count: " + result?.count, 10, 20);
 }
 
 function mouseEvent(button, mx, my) {
@@ -49,21 +58,21 @@ function mouseEvent(button, mx, my) {
         case 2: // Right click.
             app.lastMouseX = mouseX;
             app.lastMouseY = mouseY;
-
-            if (app?.selectedIndex >= 0) {
-                app.tentacles[app.selectedIndex].setTargetPosition(mouseX, mouseY);
-            }
             break;
         default:
             app.lastMouseX = null;
             app.lastMouseY = null;
 
             if (app.tentacles.length === 0)
-                app.createTentacle({ x: mx, y: my }, 10);
+                app.createTentacle({ x: mx, y: my }, 25, 16);
             
             break;
         }
-    
+
+    if (app?.selectedIndex >= 0) {
+        app.tentacles[app.selectedIndex].setTargetPosition(mouseX, mouseY);
+    }
+
     return false;
 }
 
@@ -85,6 +94,18 @@ function mousePressed(e) {
     e.stopPropagation();
     e.preventDefault();
 
+    const app = TentacleApp.instance;
+    if (app?.selectedIndex >= 0) {
+        const tent = TentacleApp.instance.tentacles[0];
+        let cursor = tent.head;
+
+        while (!!cursor) {
+            console.log(cursor.getTypeName() + "(" + cursor.color + "): " + (cursor.angle * 180).toFixed(1) + " (" + (cursor.angle).toFixed(4) + ")");
+            cursor = cursor.nextSegment;
+        }
+        console.warn("---------");
+    }
+
     if (typeof button !== "number") { 
         console.error("No button found");
         return false;
@@ -104,10 +125,10 @@ function mouseDragged(e) {
     if (app.selectedIndex >= 0) {
 
         if (typeof app.lastMouseX === "number") { 
-            const dx = (mouseX - app.lastMouseX) / 100;
+            //const dx = (mouseX - app.lastMouseX) / 100;
             const tent = app.tentacles[app.selectedIndex];
             
-            app.tentacles[app.selectedIndex].setTargetPosition(mouseX, mouseY);
+            tent.setTargetPosition(mouseX, mouseY);  //tent.head.position.y);
 
             app.lastMouseX = mouseX;
             app.lastMouseY = mouseY;
@@ -116,4 +137,8 @@ function mouseDragged(e) {
     }
 
     //return mouseEvent(0, mouseX, mouseY);
+}
+
+function mouseMove(mouseX, mouseY) { 
+    console.log("Mousemove: " + mouseX + ", " + mouseY);
 }

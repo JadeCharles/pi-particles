@@ -1,7 +1,11 @@
+const ANCHOR_TYPE_HEAD = 1;
+const ANCHOR_TYPE_TAIL = 2;
+const ANCHOR_TYPE_NONE = 0;
+
 class TentacleSegment { 
-    static colors = ["red", "white", "blue", "yellow", "green"];
+    static colors = ["#00820077", "green"];
     
-    constructor(prevSegment, options = { x: 0, y: 0, angle: 0, length: 20 }) { 
+    constructor(prevSegment, options = { x: 0, y: 0, angle: 0, length: 20, tentacle: null }) { 
         if (prevSegment !== null && !(prevSegment instanceof TentacleSegment))
             if (typeof prevSegment.x === "number" && typeof prevSegment.y === "number") {
                 options = prevSegment;
@@ -20,17 +24,23 @@ class TentacleSegment {
             colorIndex = 0;
         
         this.id = options.id || Math.floor(Math.random() * 9999999999).toString(36) + (new Date()).getTime().toString();
-        this.name = options.name || "Segment";
         this.prevSegment = prevSegment;
+        this.tentacle = options.tentacle || (prevSegment?.tentacle || null);
         this.nextSegment = null;
-        this.anchorType = 0;    // 0=None/flimsy, 1=Tail, 2=Head, 3=Fixed (same as head)
+        this.anchorType = ANCHOR_TYPE_TAIL;    // 0=None/flimsy, 1=Fixed at this.position, 2=Fixed at this.getEndPosition()
+        this.flag = 0;
+        this.index = 0;
+
+        const mass = 1.0;
         
-        if (!prevSegment) {
-            this.anchorType = 1;
-        } else if (!prevSegment.prevSegment) {
-            prevSegment.anchorType = 2; // Head
-        } else if (prevSegment.anchorType !== 3) { 
-            prevSegment.anchorType = 0; // Prev becomes a normal segment
+        this.av = 0;
+        this.aa = -9.8 * mass;
+
+        if (!prevSegment) this.anchorType = ANCHOR_TYPE_HEAD;    // Head/anchor base
+        else { 
+            this.index = prevSegment.index + 1;
+            if (!prevSegment.prevSegment) prevSegment.anchorType = ANCHOR_TYPE_HEAD;
+            else prevSegment.anchorType = ANCHOR_TYPE_NONE;
         }
 
         this.position = createVector(options.x, options.y);
@@ -42,14 +52,24 @@ class TentacleSegment {
         this.angleDamping = options.angleDamping || 0.9;
         
         this.length = options.length || 20;
+        this.totalLength = (prevSegment?.totalLength || 0) + this.length;   // Length from the head to this end position
 
         if (typeof this.length !== "number") this.length = 20;
         if (this.length <= 0) this.length = 20;
         if (typeof this.angle !== "number") this.angle = 0;
 
+        this.name = options.name || ("Segment-" + this.index);
+
+        this.tip = null;
         this.target = null;
     }
     
+    getTypeName() { 
+        if (this.anchorType === 2) return "Tail";
+        if (this.anchorType === 1) return "Head";
+        return this.name;
+    }
+
     /**
      * Appends a segment to the end of this segment.
      * @param options {object} - Segment options
@@ -102,32 +122,57 @@ class TentacleSegment {
     }
 
     getEndPosition() { 
-        const pos = createVector(this.position.x, this.position.y); 
+        const pos = this.position.copy(); 
         pos.x += cos(this.angle) * this.length;
         pos.y += sin(this.angle) * this.length;
 
         return pos;
     }
 
-    setTargetPosition(pos, prevAngle) {
+    setTargetPosition(pos, gravityPercent = 0.25) {
         if (typeof pos?.x !== "number" || typeof pos?.y !== "number")
             throw new Error("Can't set segment target position. Pos is not a valid vector: " + pos);
 
         const diff = p5.Vector.sub(pos, this.position);
         this.angle = diff.heading();
 
-        diff.setMag(this.length);
+        if (this.anchorType !== 1) {
+            diff.mult(-1);
+            diff.setMag(this.length);
 
-        this.position = p5.Vector.add(pos, diff.mult(-1));
+            if (this.anchorType === 2) {
+                this.tip = pos.copy();
+            }
+            else { 
+                const gravityAccelerationX = 0;
+                const gravityAccelerationY = this.tentacle.head.anchorType === 0 ? 5 : 0.15;  //9.8 * gravityPercent;
+                diff.add(gravityAccelerationX, gravityAccelerationY);
+            }
 
-        // Go backwards recursively
-        const hasPrev = !!this.prevSegment;
-        
-        if (!hasPrev) { 
-            return this.position;
+            this.position = p5.Vector.add(pos, diff);
+        } else {
+            this.tip = null;
         }
 
-        return this.prevSegment.setTargetPosition(this.position, this.angle);
+        // Go backwards recursively (tail => head)
+        const hasPrev = !!this.prevSegment;
+        if (!hasPrev) return this.position;
+
+        return this.prevSegment.setTargetPosition(this.position, gravityPercent);
+    }
+
+    frontPropagate() {
+        // Go forwards recursively (head => tail)
+        if (!!this.nextSegment) { 
+            const pos = this.getEndPosition();
+            this.nextSegment.position.set(pos);
+            return this.nextSegment.frontPropagate();
+        }
+        
+        return this.position;
+    }
+
+    backPropagateToLowestGravityPoint() {
     }
 
     updatePhysics(index) { 
@@ -145,19 +190,24 @@ class TentacleSegment {
     }
 
     drawSegment(index, isTail = false) {
-        // Default mode is CENTER, which means it draws from the center of the circle based on diameter (not radius)
-        // Switching the ellipseMode(RADIUS) will draw from the center, but use the radius for sizing
         const pos = this.getEndPosition();
+        const color = this.color || "white";
 
-        stroke(this.color);
-
+        stroke(color);
         strokeWeight(1);
+
         line(this.position.x, this.position.y, pos.x, pos.y);
 
         noStroke();
-        fill(this.color);
-        ellipse(pos.x, pos.y, 5, 5);
-        ellipse(this.position.x, this.position.y, 5, 5);
+        fill(color);
+
+        // Default ellipse mode is CENTER, which means it draws from the center of the circle based on diameter (not radius)
+        // Switching the ellipseMode(RADIUS) will draw from the center, but use the radius for sizing
+        if (this.anchorType === 1) fill("cyan");
+        ellipse(this.position.x, this.position.y, 4, 4);
+
+        if (this.anchorType === 2) fill("cyan");
+        ellipse(pos.x, pos.y, 4, 4);
 
         if (!!this.nextSegment)
             this.nextSegment.drawSegment();
@@ -179,6 +229,8 @@ class Tentacle {
         this.segmentCount = 0;
         this.totalAngleDiff = 0;
         this.totalLength = 0;
+
+        this.anchorPosition = null;
         this.tail = null;
         this.head = null;
 
@@ -208,31 +260,26 @@ class Tentacle {
      * @param {TentacleSegment} anchorSegment - Segment to anchor to. If null, it assumes the tail
      * @returns the root/head position of the entire tentacle after it recurses from the tail back up to the head/root
      */
-    setTargetPosition(x, y, targeterSegment = null) { 
+    setTargetPosition(x = null, y = null, targeterSegment = null) { 
         if (targeterSegment === null) targeterSegment = this.tail;
         if (targeterSegment === null) { 
             console.warn("No Anchor Segment");
             return;
         }
 
-        const mousePos = createVector(x, y);
-        const anchorPos = this.head.position;
-        const mouseDistance = mousePos.dist(anchorPos);
-        const outOfRange = mouseDistance >= this.totalLength;
-
-        const headAngle = outOfRange ?
-            mousePos.sub(anchorPos).heading() :
-            null;
+        if (typeof x === "number" && typeof y === "number")
+            this.targetPosition = createVector(x, y);
         
-        if (outOfRange) {
-            this.tail.angle = 0;
-            return this.head.setAngles(0, headAngle);
-        }
+        const a = targeterSegment.setTargetPosition(this.targetPosition, true);
+        if (this.head.anchorType === 1) this.head.frontPropagate(this.targetPosition);
 
-        return targeterSegment.setTargetPosition(mousePos, 0);
+        return a;
     }
 
     appendSegment(options) {
+        if (!options) options = {};
+        if (!options.tentacle) options.tentacle = this;
+        
         if (!this.head) {
             this.head = new TentacleSegment(null, options);
             this.tail = this.head;
@@ -241,6 +288,7 @@ class Tentacle {
         }
 
         this.segmentCount++;
+        this.targetPosition = this.tail.getEndPosition();
         this.totalLength += this.tail.length;
         this.totalAngleDiff = this.head.angle - this.tail.angle;
 
@@ -248,7 +296,10 @@ class Tentacle {
     }
     
     updatePhysics(index) {
-        if (!!this.head) this.head.updatePhysics();
+        if (!!this.head) {
+            this.head.updatePhysics();
+            this.setTargetPosition();
+        }
     }
 
     updatePositions(index) { 
