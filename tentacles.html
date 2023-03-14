@@ -6,7 +6,9 @@
     <title>Tentacle Life</title>
     <script src="scripts/infrastructure/jquery-3.6.3.min.js"></script>
     <script src="scripts/infrastructure/p5.js"></script>
+    <script src="scripts/apps/players/player.js"></script>
     <script src="scripts/apps/tentacles/tentacle.js"></script>
+    <script src="scripts/apps/tentacles/tentacle-player.js"></script>
     <script src="scripts/apps/tentacles/app.tentacles.js"></script>
     <script src="scripts/apps/tentacles/sketch.tentacles.js"></script>
 
@@ -103,6 +105,7 @@
 
     <script src="scripts/infrastructure/ui/ui.js"></script>
     <script src="scripts/infrastructure/ui/animation-controls.js"></script>
+    <script src="scripts/apps/structures/game-grid.js"></script>
 
     <script>
         /**
@@ -146,7 +149,7 @@
             app[func](input.value);
         }
 
-        TentacleApp.instance.createTentacle();
+        TentacleApp.instance.createPlayer();
         
     </script>
 </body>

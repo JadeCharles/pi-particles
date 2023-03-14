@@ -1,8 +1,9 @@
 class TentacleApp { 
     static instance = new TentacleApp();
 
-    static init() { 
-        TentacleApp.instance = new TentacleApp();
+    static init() {
+        const grid = new GameGrid({ showGrid: true });
+        TentacleApp.instance = new TentacleApp({ grid: grid });
     }
 
     constructor(...args) { 
@@ -14,10 +15,12 @@ class TentacleApp {
         this.width = 100;
         this.height = 100;
         this.mounted = false;
-        this.tentacles = [];
-
+        this.grid = options.grid || null;
+        this.showGrid = true;
+        
         this.selectedIndex = -1;
         this.needsEventListeners = true;
+        this.players = [];
 
         if (!document.getElementById(this.elementId)) return;
 
@@ -25,37 +28,18 @@ class TentacleApp {
         this.addEventListeners();
     }
 
-    /**
-     * 
-     * @param {object} pos - Position object { x: number, y: number }
-     * @param {number} segmentCount - Number of tentacle segments (the higher the number, the more fluid the tentacle)
-     * @param {number} segmentLength - Length of each segment (the smaller the number, the more fluid the tentacle)
-     * @returns 
-     */
-    createTentacle(pos, segmentCount = 5, segmentLength = 50) { 
+    createPlayer(options) { 
         if (!this.mounted) {
             console.error("App not mounted yet");
             return null;
         }
 
         if (this.needsEventListeners) this.addEventListeners();
-        
-        if (!pos) pos = { x: 0, y: 0 };
 
-        const tentacle = new Tentacle();
-        const colorCount = TentacleSegment.colors.length;
+        if (!options) options = {};
+        options.app = this;
 
-        let cursor = null;
-        
-        for (let i = 0; i < segmentCount; i++) {
-            const m = Math.floor(Math.random() * 10) % 2 === 0 ? 1 : -1;
-            const angle = (Math.random() * Math.PI) * m;
-            const segmentOptions = { x: pos.x, y: pos.y, angle: angle, length: segmentLength, colorIndex: i % colorCount };
-            cursor = tentacle.appendSegment(segmentOptions);
-        }
-
-        this.tentacles.push(tentacle);
-        if (this.selectedIndex < 0) this.selectedIndex = 0;
+        this.players.push(new TentaclePlayer(options));
     }
 
     addEventListeners() {
@@ -85,6 +69,10 @@ class TentacleApp {
                 case "escape":
                     break;
                 case "h":
+                    break;
+                case "d":
+                case "keyd":
+                    if (this.players.length > 0) this.players[0].debug = !(this.players[0].debug === true);
                     break;
             }
         });
@@ -118,37 +106,45 @@ class TentacleApp {
         this.height = typeof canvas?.offsetHeight === 'number' ? canvas.offsetHeight - 1 : 500;
     }
     
-    updatePhysics() { 
+    update() { 
         let i = 0;
-        const app = TentacleApp.instance;
-        const tentacleCount = app.tentacles.length;
+        const players = TentacleApp.instance.players;
+        const playerCount = players.length;
 
-        while (i < tentacleCount) { 
-            const tentacle = app.tentacles[i];
-            tentacle.updatePhysics(i);
-            tentacle.updatePositions(i);
+        while (i < playerCount) { 
+            const p = players[i];
+
+            if (typeof p.update !== "function") { 
+                for (let x in p) { 
+                    console.log(x);
+                }
+                throw new Error("Not a function: ");
+            }
+
+            p.update(i);
             i++;
         }
 
         // Return an object in case we want to add more properties later.
         return {
-            count: tentacleCount
+            count: playerCount
         };
     }
 
-    drawTentacles() { 
+    drawPlayers() { 
         let i = 0;
-        const app = TentacleApp.instance;
-        const tentacleCount = app.tentacles.length;
+        const players = TentacleApp.instance.players;
+        const playerCount = players.length;
 
-        while (i < tentacleCount) { 
-            app.tentacles[i].drawTentacle(i);
+        while (i < playerCount) { 
+            players[i].draw(i);
             i++;
         }
 
         // Return an object in case we want to add more properties later.
         return {
-            count: tentacleCount
+            count: playerCount,
+            player: playerCount > 0 ? players[0] : null
         };
     }
 }

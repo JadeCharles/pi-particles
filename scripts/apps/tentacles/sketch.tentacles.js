@@ -19,59 +19,40 @@ function setup() {
 
     console.log("Setup Good: " + app.width + " x " + app.height);
     app.mounted = true;
-}
-
-/**
- * Implementation of the p5.js draw() function.
- * This is called every frame: Updates the physics of all particle interactions, then draws the particles.
- */
-function draw() {
-    const app = TentacleApp.instance;
-
-    app.updatePhysics();
-
-    background(0);  // Blank out the background.
-
-    const result = app.drawTentacles();
-
-    // Set pen color to white
-    fill(255);
-
-    // Draw mouse cursor:
-    if (typeof app.lastMouseX === "number") { 
-        noFill();
-        stroke("#FFFFFF88");
-        strokeWeight(1);
-        ellipse(app.lastMouseX, app.lastMouseY, 32, 32);
-        fill("white");
-        ellipse(app.lastMouseX, app.lastMouseY, 4, 4);
-    }
-
-    // Draw the top label/caption
+    app.grid?.updateSize();
 }
 
 function mouseEvent(button, mx, my) {
     const app = TentacleApp.instance;
-    console.log("Mouse ClickX");
 
     switch (button) {
         case 2: // Right click.
             app.lastMouseX = mouseX;
             app.lastMouseY = mouseY;
+
+            if (app.players.length > 0) { 
+                const m = createVector(mouseX, mouseY);
+                const player = app.players[0];
+                const tentacle = player.tentacles[0];
+                const withinPos = m.isWithinMidPoint(tentacle.tail.getEndPosition(), player.position);
+
+                console.warn("Mouse: (" + m.x + ", " + m.y + ") is inbetween: " + withinPos.toString());
+            }
             break;
         default:
             app.lastMouseX = null;
             app.lastMouseY = null;
 
-            if (app.tentacles.length === 0)
-                app.createTentacle({ x: mx, y: my }, 25, 16);
+            if (app.players.length === 0) { 
+                const options = { x: mouseX, y: mouseY, color: "red", name: "Jade" };
+                app.createPlayer(options);
+            } else {
+                const selectedPlayer = app.players[0];  // TODO: Selected player's (multiple)
+                selectedPlayer.setTargetDestination(mouseX, mouseY);
+            }
             
             break;
         }
-
-    if (app?.selectedIndex >= 0) {
-        app.tentacles[app.selectedIndex].setTargetPosition(mouseX, mouseY);
-    }
 
     return false;
 }
@@ -93,18 +74,6 @@ function mousePressed(e) {
     const button = e?.button;
     e.stopPropagation();
     e.preventDefault();
-
-    const app = TentacleApp.instance;
-    if (app?.selectedIndex >= 0) {
-        const tent = TentacleApp.instance.tentacles[0];
-        let cursor = tent.head;
-
-        while (!!cursor) {
-            console.log(cursor.getTypeName() + "(" + cursor.color + "): " + (cursor.angle * 180).toFixed(1) + " (" + (cursor.angle).toFixed(4) + ")");
-            cursor = cursor.nextSegment;
-        }
-        console.warn("---------");
-    }
 
     if (typeof button !== "number") { 
         console.error("No button found");
@@ -133,12 +102,51 @@ function mouseDragged(e) {
             app.lastMouseX = mouseX;
             app.lastMouseY = mouseY;
         }
-
     }
-
-    //return mouseEvent(0, mouseX, mouseY);
 }
 
-function mouseMove(mouseX, mouseY) { 
-    console.log("Mousemove: " + mouseX + ", " + mouseY);
+// Drawing Methods - Always on the bottom of the file
+
+/**
+ * Draws the visual representation of where the selectedPlayer is headed to (targeting)
+ * @returns 
+ */
+function drawTarget() { 
+    // Draw mouse cursor:
+    if (typeof app.lastMouseX !== "number") return;
+
+    noFill();
+    stroke("#FFFFFF88");
+    strokeWeight(1);
+    ellipse(app.lastMouseX, app.lastMouseY, 32, 32);
+    fill("white");
+    ellipse(app.lastMouseX, app.lastMouseY, 4, 4);
 }
+
+
+/**
+ * Implementation of the p5.js draw() function.
+ * This is called every frame: Updates the physics of all particle interactions, then draws the particles.
+ */
+function draw() {
+    const app = TentacleApp.instance;
+
+    app.update();
+
+    background(0);  // Blank out the background.
+
+    if (!!app.grid) app.grid.drawGrid();
+    else console.warn("No Grid");
+
+    const result = app.drawPlayers();
+
+    // Set pen color to white
+    fill(255);
+
+    // Draw the top label/caption
+    if (result?.player) { 
+        text("Player: " + result.player.name + ": " + (result?.player.notes || ""), 10, 20);
+    }
+}
+
+// Make sure draw() is the last function in the class for readability.
