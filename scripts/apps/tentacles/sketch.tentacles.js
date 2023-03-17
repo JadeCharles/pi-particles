@@ -22,37 +22,79 @@ function setup() {
     app.grid?.updateSize();
 }
 
+function gravityTest(deg) { 
+    deg = deg % 360;
+    let angle = deg * Math.PI / 180;
+    let len = 10;
+    let forces = createVector(0, -9.8);
+    
+    const t = createVector(len * Math.cos(angle), len * Math.sin(angle));
+    const torque = p5.Vector.mult(forces, t);
+
+    const g2 = t.y * t.y;
+    const l2 = len * len;
+
+    // g2 + x2 = l2
+    // x2 = l2 - g2
+    torque.x = Math.sqrt(l2 - g2);
+    // a2 + b2 = c2
+    // c = sqrt(a2 + b2)
+
+    console.warn("Torque [" + deg + "]: " + torque.x + ", " + torque.y);
+
+    setTimeout(() => {
+        //gravityTest(deg + 5);
+    }, 1000);
+
+    return false;
+
+}
+
+function handleRightClick(mouseX, mouseY) { 
+    const app = TentacleApp.instance;
+    const player = app.players.length > 0 ? app.players[0] : null;
+
+    if (!player) { 
+        console.warn("No Player.");
+        return;
+    }
+
+    const m = createVector(mouseX, mouseY);
+    player.tentacles[0].setTailTipPosition(m, 3);
+}
+
+function handleLeftClick(mouseX, mouseY) {
+    if (gravityTest(0)) return;
+
+    const app = TentacleApp.instance;
+
+    if (app.players.length === 0) { 
+        const options = { x: mouseX, y: mouseY, color: "green", name: "Jade", tentacleCount: 1, tentacleSegmentLength: 64, tentacleSegmentCount: 12};
+        app.createPlayer(options);
+    } else {
+        const selectedPlayer = app.players[0];
+        const mousePosition = createVector(mouseX, mouseY);
+        
+        app.players[0].tentacles[0].shouldUpdate = true;
+    }
+}
+
 function mouseEvent(button, mx, my) {
     const app = TentacleApp.instance;
 
+    app.button = button;
+
     switch (button) {
         case 2: // Right click.
-            app.lastMouseX = mouseX;
-            app.lastMouseY = mouseY;
-
-            if (app.players.length > 0) { 
-                const m = createVector(mouseX, mouseY);
-                const player = app.players[0];
-                const tentacle = player.tentacles[0];
-                const withinPos = m.isWithinMidPoint(tentacle.tail.getEndPosition(), player.position);
-
-                console.warn("Mouse: (" + m.x + ", " + m.y + ") is inbetween: " + withinPos.toString());
-            }
+            this.handleRightClick(mouseX, mouseY);
             break;
         default:
-            app.lastMouseX = null;
-            app.lastMouseY = null;
-
-            if (app.players.length === 0) { 
-                const options = { x: mouseX, y: mouseY, color: "red", name: "Jade" };
-                app.createPlayer(options);
-            } else {
-                const selectedPlayer = app.players[0];  // TODO: Selected player's (multiple)
-                selectedPlayer.setTargetDestination(mouseX, mouseY);
-            }
-            
+            this.handleLeftClick(mouseX, mouseY);
             break;
-        }
+    }
+    
+    app.lastMouseX = mouseX;
+    app.lastMouseY = mouseY;
 
     return false;
 }
@@ -90,20 +132,36 @@ function mouseDragged(e) {
     if (target?.tagName !== "CANVAS") return;
 
     const app = TentacleApp.instance;
+    if (app.lastMouseX === null) return;
 
-    if (app.selectedIndex >= 0) {
+    const player = app.players.length > 0 ? app.players[0] : null;
 
-        if (typeof app.lastMouseX === "number") { 
-            //const dx = (mouseX - app.lastMouseX) / 100;
-            const tent = app.tentacles[app.selectedIndex];
-            
-            tent.setTargetPosition(mouseX, mouseY);  //tent.head.position.y);
+    if (app.button === 2) { 
+        const m = createVector(mouseX, mouseY);
+        player.tentacles[0].setTailTipPosition(m, 3);
+        return;
+    }
 
-            app.lastMouseX = mouseX;
-            app.lastMouseY = mouseY;
-        }
+    const selectedJoint = player?.tentacles[0].selectedSegment;
+
+    if (!!selectedJoint) {
+        console.log("Drag Good.");
+        debugMoveJoint(app, selectedJoint);
     }
 }
+
+function debugMoveJoint(app, joint) {
+    const my = app.height - mouseY;
+    const lmy = typeof app.lastMouseY === "number" ? (app.height - app.lastMouseY) : my;
+
+    const dy = my - lmy;
+    
+    joint.updateAngleBy(-dy / 100);  //tent.head.position.y);
+
+    app.lastMouseX = mouseX;
+    app.lastMouseY = mouseY;
+}
+
 
 // Drawing Methods - Always on the bottom of the file
 
@@ -136,7 +194,6 @@ function draw() {
     background(0);  // Blank out the background.
 
     if (!!app.grid) app.grid.drawGrid();
-    else console.warn("No Grid");
 
     const result = app.drawPlayers();
 

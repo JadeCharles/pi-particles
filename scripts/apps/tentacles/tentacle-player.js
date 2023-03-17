@@ -3,48 +3,89 @@ class TentaclePlayer extends Player {
         super(options);
         if (!options) options = {};
 
-        const tentacleCount = options.tentacleCount || 4;
-
         this.selectedIndex = -1;
         this.tentacles = options.tentacles || [];
-        this.tentacleCount = 0;
+        this.name = options.name || "Player";
+        this.color = options.color || "white";
         this.app = options.app || null;
         this.notes = null;
         this.debug = false;
 
-        this.speedValue = (options.speed || options.speedValue) || 1.5;
-        this.accelerationValue = (options.acceleration || options.accelerationValue) || 0.1;
+        this.speed = (options.speed || options.speed) || 1.5;
+        this.accelerationScalar = (options.acceleration || options.accelerationValue) || 0.1;
+        this.acceleration = createVector(0, 0); // Acceleration vector (x/y direction)
 
         this.currentSpeed = createVector(0, 0);    // Current speed vector (x/y direction)
-        this.currentSpeedScalar = 0;  // Current speed as a decimal value
+        this.currentScalarSpeed = 0;  // Current speed as a decimal value
 
         this.targetSpeed = createVector(0, 0);  // Max speed vector (x/y direction)
-        this.targetSpeedScalar = 0; // Max speed as a decimal value
-
-        this.acceleration = createVector(0, 0); // Acceleration vector (x/y direction)
-        this.accelerationScalar = 0;            // Acceleration as a decimal value
+        this.targetScalarSpeed = 0; // Max speed as a decimal value
 
         this.target = null; // The target the player is moving towards
 
-        // The position vector that the player is hung-up on.
-        // Usually the tip of the tail of the furthest tentacle from the direction the player is headed
-        this.hungupTentacle = null;
-
         const pos = this.position;
-        const tentacleSegmentLength = options.tentacleSegmentLength || 12;
+        const tentacleSegmentLength = options.tentacleSegmentLength || 24;
         const tentacleSegmentCount = options.tentacleSegmentCount || (options.tentacleSegmentCount || 10);
+        const tentacleCount = options.tentacleCount || 1;
 
-        console.log("TentacleSegmentCount: " + tentacleSegmentCount + ", TentacleSegmentLength: " + tentacleSegmentLength);
         for (let i = 0; i < tentacleCount; i++) {
-            const po = { x: pos.x, y: pos.y, angle: 0, player: this };
-            const color = TentacleSegment.colors[0];  //i % TentacleSegment.colors.length];
+            const po = { x: pos.x, y: pos.y, angle: 0, player: this, name: this.name + " Tentacle " + i };
+            const color = this.color;
             const t = this.createTentacle(po, tentacleSegmentCount, tentacleSegmentLength, color);
-            t.name += " (" + i + ")";
         }
+
+        this.tentacleCount = tentacleCount;
 
         this.setRestingPose(pos.x, pos.y);
 
-        console.log("Created Player: " + this.name);
+        console.log("Created Player with " + this.tentacleCount + " tentacles setup: " + this.name);
+    }
+
+    /**
+     * 
+     * @param {object} pos - Position object { x: number, y: number }
+     * @param {number} segmentCount - Number of tentacle segments (the higher the number, the more fluid the tentacle)
+     * @param {number} segmentLength - Length of each segment (the smaller the number, the more fluid the tentacle)
+     * @returns 
+     */
+    createTentacle(pos, segmentCount = 5, segmentLength = 50, color = null) { 
+        if (this.needsEventListeners) this.addEventListeners();
+        
+        if (!pos) pos = { x: this.position.x, y: this.position.y };
+
+        const tentacle = new Tentacle({ player: this, color: color });
+        const colorCount = TentacleSegment.colors.length;
+
+        const tailIndex = segmentCount - 1;
+        const intervalRadians = (Math.PI / 3);
+        let cursor = null;
+
+        for (let i = 0; i < segmentCount; i++) {
+            const m = i % 2 === 0 ? -1 : 1;
+            // const randomAngle = (Math.random() * (Math.PI / 2)) * m;
+
+            const angle = (i === 0 ? Math.PI / 6 : intervalRadians) * m;
+
+            const segmentOptions = {
+                x: pos.x,
+                y: pos.y,
+                angle: angle,
+                length: segmentLength,
+                color: color,
+                colorIndex: i % colorCount
+            };
+
+            cursor = tentacle.appendSegment(segmentOptions);
+        }
+
+        tentacle.head.id = "head-" + this.tentacles.length.toString();
+        tentacle.tail.id = "tail-" + this.tentacles.length.toString();
+
+        this.tentacles.push(tentacle);
+        if (this.selectedIndex < 0) this.selectedIndex = 0;
+
+        this.tentacleCount = this.tentacles.length;
+        return tentacle;
     }
 
     setRestingPose(x, y, offset = null) {
@@ -69,26 +110,25 @@ class TentaclePlayer extends Player {
                     break;
             }
 
-            const xx = Math.max(x + dx, -1);
-            const yy = Math.max(y + dy, -1);
+            const xx = Math.max(x + dx * 0.7, -1);
+            const yy = Math.max(y + dy * 0.7, -1);
 
-            this.tentacles[i].setTargetPosition(xx, yy);
+            this.tentacles[i].setTarget(createVector(xx, yy));
         }
     }
 
-    setTargetDestination(x, y) {
-        if (typeof x !== "number" || typeof y !== "number")
-            throw new Error("Invalid position: " + x + ", " + y);
+    setTargetDestination(targetPos) {
+        this.target = targetPos;
+        console.log("Set Target: " + this.target);
 
-        this.target = createVector(x, y);
-
-        this.targetSpeedScalar = this.speedValue;
+        this.targetScalarSpeed = this.speed;
         this.targetSpeed = p5.Vector.sub(this.target, this.position);
-        this.accelerationScalar = this.accelerationValue;
+        this.acceleration = this.targetSpeed.copy().setMag(this.accelerationScalar);  // Set to max acceleration
 
-        this.targetSpeed.setMag(this.targetSpeedScalar);    // Set to max speed
-        this.acceleration.setMag(this.accelerationScalar);  // Set to max acceleration
-        this.updateSpeed(Math.max(this.currentSpeedScalar, 0.00001)); // Set to current speed (if it currently has a speed), or 0.00001 (if it's stopped, which is basically zero)
+        this.targetSpeed.setMag(this.targetScalarSpeed);    // Set to max speed
+        this.accelerate();
+
+        //this.updateSpeed(Math.max(this.currentScalarSpeed, 0.00001)); // Set to current speed (if it currently has a speed), or 0.00001 (if it's stopped, which is basically zero)
 
         this.reSortTentacles();
 
@@ -100,8 +140,17 @@ class TentaclePlayer extends Player {
      * which is the last tentacle in the array after reSortTentacles() is called.
      * @returns {Tentacle} The tentacle that is closest to the target, which is to say: the tentacle that is sorted last in the array after reSortTentacles() is called
      */
-    getClosesTentatleToTarget() {
+    getClosestTentatleToTarget() {
         return this.tentacles[this.tentacleCount - 1];
+    }
+
+    /**
+     * Gets the tentacle that has a tip that is the farthest from the last calculated player target position,
+     * which is the first tentacle in the array after reSortTentacles() is called.
+     * @returns {Tentacle} The tentacle that is farthest from the target, which is to say: the tentacle that is sorted last in the array after reSortTentacles() is called
+     */
+    getFarthestTentatleToTarget() {
+        return this.tentacles[0];
     }
 
     reSortTentacles() {
@@ -117,49 +166,20 @@ class TentaclePlayer extends Player {
         return this.tentacles;
     }
 
-    /**
-     * 
-     * @param {object} pos - Position object { x: number, y: number }
-     * @param {number} segmentCount - Number of tentacle segments (the higher the number, the more fluid the tentacle)
-     * @param {number} segmentLength - Length of each segment (the smaller the number, the more fluid the tentacle)
-     * @returns 
-     */
-    createTentacle(pos, segmentCount = 5, segmentLength = 50, color = null) { 
-        if (this.needsEventListeners) this.addEventListeners();
-        
-        if (!pos) pos = { x: this.position.x, y: this.position.y };
-
-        const tentacle = new Tentacle({ player: this, color: color });
-        const colorCount = TentacleSegment.colors.length;
-
-        let cursor = null;
-        
-        for (let i = 0; i < segmentCount; i++) {
-            const m = Math.floor(Math.random() * 10) % 2 === 0 ? 1 : -1;
-            const angle = (Math.random() * Math.PI) * m;
-            const segmentOptions = { x: pos.x, y: pos.y, angle: angle, length: segmentLength, color: color, colorIndex: i % colorCount };
-            cursor = tentacle.appendSegment(segmentOptions);
-        }
-
-        this.tentacles.push(tentacle);
-        if (this.selectedIndex < 0) this.selectedIndex = 0;
-
-        this.tentacleCount = this.tentacles.length;
-
-        return tentacle;
+    getSelectedTentacle() { 
+        return this.tentacles[this.selectedIndex];
     }
 
     onArrival(clearTarget = true) { 
         if (clearTarget === true) { 
             this.targetSpeed = createVector(0, 0);
-            this.targetSpeedScalar = 0;
+            this.targetScalarSpeed = 0;
             this.target = null;
 
             this.acceleration = createVector(0, 0);
-            this.accelerationScalar = 0;
 
             this.currentSpeed = createVector(0, 0);
-            this.currentSpeedScalar = 0;
+            this.currentScalarSpeed = 0;
 
             setTimeout(() => {
                 if (!this.target)
@@ -168,57 +188,53 @@ class TentaclePlayer extends Player {
         }
 
         // Current speed
-        this.updateSpeed(Math.max(this.currentSpeedScalar, 0.00001));
+        this.updateSpeed(Math.max(this.currentScalarSpeed, 0.00001));
     }
 
     update(index) { 
         let i = 0;
-        const tentacleCount = this.updatePositions(); // this.tentacles.length;
-
+        const tentacleCount = this.tentacles.length;
+        const tentacleForces = createVector(0, 0);
+        
         while (i < tentacleCount) {
-            this.tentacles[i].updatePhysics(i);
+            const forces = this.tentacles[i].updatePhysics(i);
+            tentacleForces.add(forces);
             i++;
         }
 
-        // Return an object in case we want to add more properties later.
-        return tentacleCount; //this.updatePositions(constraints);
+        return this.updatePositions(tentacleForces);
     }
 
-    updatePositions() {
+    updatePositions(tentacleForces) {
         const tentacleCount = this.tentacles.length;
         
-        if (!this.target) {
-            return tentacleCount;
-        }
-
-        if (!!this.hungupTentacle) {
-            this.onArrival(false);
-            this.setCourse();
-            this.hungupTentacle = null;
-
-            return tentacleCount;
-        }
-
-        if (this.currentSpeedScalar < this.targetSpeedScalar)
+        if (this.currentScalarSpeed < this.targetScalarSpeed) { 
             this.accelerate();
+        }
         
-        this.position.add(this.currentSpeed);
+        // TODO: Some Newtonian physics here with tentacleForces
+        let hasArrived = false;
 
-        const pos = this.position; 
+        if (!!this.target) {
+            this.position.add(this.currentSpeed);
+
+            const diff = p5.Vector.sub(this.target, this.position);
+            const distance = diff.mag();
+            const minDist = Math.max(1, this.currentScalarSpeed);
+
+            hasArrived = (distance <= minDist);
+        }
 
         let i = 0;
+
         // Set the head position of each tentacle to the position of the player' position
         // The rest of the segments will auto configure themselves
         while(i < tentacleCount) {
-            this.tentacles[i].setRootPosition(pos.x, pos.y);
+            this.tentacles[i].updatePositions(i);
             i++;
         }
 
-        const diff = p5.Vector.sub(this.target, pos);
-        const distance = diff.mag();
-        const minDist = Math.max(1, this.currentSpeedScalar);
-
-        if (distance <= minDist) {
+        if (hasArrived) { 
             console.error("Player Arrived");
             this.onArrival();
         }
@@ -227,18 +243,28 @@ class TentaclePlayer extends Player {
     }
 
     accelerate() {
-        return this.updateSpeed(this.currentSpeedScalar + this.accelerationScalar);
+        if (typeof this.currentScalarSpeed !== "number") throw new Error("Can't accelerate. CurrentScalarSpeed is no good: " + this.currentScalarSpeed);
+        if (typeof this.accelerationScalar !== "number" || this.accelerationScalar <= 0)
+            throw new Error("Can't accelerate. AccelerationScalar is no good: " + this.accelerationScalar);
+
+        return this.updateSpeed(this.currentScalarSpeed + this.accelerationScalar);
     }
 
     updateSpeed(speedScalar) {
         if (!this.target) return;
-        if (speedScalar === 0) throw new Error("Can't set speed scalar to zero");
+        if (typeof speedScalar !== "number") throw new Error("Can't set speed scalar: " + speedScalar);
         
-        const newSpeed = p5.Vector.sub(this.target, this.position);
-        newSpeed.setMag(speedScalar);
+        if (speedScalar <= 0) { 
+            if (!this.target) { 
+                this.currentSpeed = createVector(0, 0);
+                this.currentScalarSpeed = 0;
+                return this.currentSpeed;
+            }
+        }
 
-        this.currentSpeed = newSpeed;
-        this.currentSpeedScalar = speedScalar;
+        this.currentSpeed = p5.Vector.sub(this.target, this.position);
+        this.currentSpeed.setMag(speedScalar);
+        this.currentScalarSpeed = speedScalar;
 
         return this.currentSpeed;
     }

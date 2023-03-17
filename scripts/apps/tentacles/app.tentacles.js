@@ -15,12 +15,17 @@ class TentacleApp {
         this.width = 100;
         this.height = 100;
         this.mounted = false;
-        this.grid = options.grid || null;
+        this.grid = null; // options.grid || null;
         this.showGrid = true;
         
         this.selectedIndex = -1;
         this.needsEventListeners = true;
         this.players = [];
+        this.markers = [];
+
+        this.lastMouseX = 0;
+        this.lastMouseY = 0;
+        this.debugLevel = 0;
 
         if (!document.getElementById(this.elementId)) return;
 
@@ -30,7 +35,7 @@ class TentacleApp {
 
     createPlayer(options) { 
         if (!this.mounted) {
-            console.error("App not mounted yet");
+            console.warn("App not mounted yet");
             return null;
         }
 
@@ -61,18 +66,30 @@ class TentacleApp {
             return false;
         });
 
+        // Handle Key Press
+
         // Generally add keyboard event handlers
         document.addEventListener("keydown", (e) => {
-            // Handle Key Press
+            const player = (this.players.length > 0) ? this.players[0] : null;
+            const tent = player?.tentacles[0];
+            
             const k = e.key.toLowerCase();
             switch (k) {
                 case "escape":
                     break;
                 case "h":
                     break;
+                case "s":
+                case "keys":
+                    if (!!tent) {
+                        tent.selectedSegment = !!tent.selectedSegment ? tent.selectedSegment?.nextSegment : tent.head;
+                        console.log("Selected segment: " + (tent.selectedSegment?.id || "(None)"));
+                    }
+                    break;
                 case "d":
                 case "keyd":
-                    if (this.players.length > 0) this.players[0].debug = !(this.players[0].debug === true);
+                    this.debugLevel++;
+                    if (this.debugLevel > 2) this.debugLevel = 0;
                     break;
             }
         });
@@ -131,6 +148,15 @@ class TentacleApp {
         };
     }
 
+    drawCircleAt(pos, color = null, size = 16, thickness = 1) { 
+        if (!pos) return;
+        
+        stroke(color || "#CCCCCC");
+        strokeWeight(thickness);
+        noFill();
+        ellipse(pos.x, pos.y, size, size);
+    }
+
     drawPlayers() { 
         let i = 0;
         const players = TentacleApp.instance.players;
@@ -140,6 +166,28 @@ class TentacleApp {
             players[i].draw(i);
             i++;
         }
+
+        i = 0;
+        const len = this.markers.length;
+
+        stroke(0, 255, 255);
+        strokeWeight(1);
+        noFill();
+
+        while (i < len) { 
+            const m = this.markers[i];
+            if (!m.text) continue;
+
+            fill(0, 255, 255, 80);
+            ellipse(m.x, m.y, 16, 16);
+
+            noFill();
+            text(m.text, m.x + 16, m.y);
+
+            i++;
+        }
+
+        noFill();
 
         // Return an object in case we want to add more properties later.
         return {
