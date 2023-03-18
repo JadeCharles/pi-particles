@@ -69,7 +69,7 @@ function handleLeftClick(mouseX, mouseY) {
     const app = TentacleApp.instance;
 
     if (app.players.length === 0) { 
-        const options = { x: mouseX, y: mouseY, color: "green", name: "Jade", tentacleCount: 1, tentacleSegmentLength: 64, tentacleSegmentCount: 12};
+        const options = { x: mouseX, y: mouseY, color: "green", name: "Jade", tentacleCount: 1, tentacleSegmentLength: 128, tentacleSegmentCount: 4};
         app.createPlayer(options);
     } else {
         const selectedPlayer = app.players[0];

@@ -24,7 +24,7 @@ class Tentacle {
         this.segmentCount = 0;
         this.totalLength = 0;
         
-        this.state = 0; // 0=Flimsy with gravity, 1=Moving
+        this.state = 0; // 0=Flimsy with gravity, 1=Moving to position
         this.notes = "";
 
         this.tail = null;
@@ -88,8 +88,17 @@ class Tentacle {
             cursor.angle = ax + newGlobalAngle;
             cursor = cursor.nextSegment;
         }
+
+        this.state = 0;
     }
 
+    /**
+     * Attempts to set the very tip of the tentacle to the given position. If not, it will reach as far as it can and completely straighten out.
+     * Uses a cursor (not recursion or for/while loop) to loop through all tentacles (starting with the head) and updates each segment accordingly (not recursive).
+     * If the pos is too far, it calls straigtenTentacleSegments() to straighten out the tentacle.
+     * @param {p5.Vector} pos - The position that the tip of the tentacle will move towards
+     * @returns 
+     */
     setTailTipPosition(pos) {
         let cursor = this.tail;
 
@@ -103,11 +112,8 @@ class Tentacle {
             return;
         }
 
-        TentacleApp.instance.markers = [];
-
         while (!!cursor) {
             cursor.tip.position.set(pos);
-            //TentacleApp.instance.markers.push({ x: pos.x, y: pos.y, text: cursor.id + " tip: " + pos.x.toFixed(1) + ", " + pos.y.toFixed(1) });
 
             const dir = p5.Vector.sub(cursor.tip.position, cursor.base.position);
             cursor.angle = dir.heading();

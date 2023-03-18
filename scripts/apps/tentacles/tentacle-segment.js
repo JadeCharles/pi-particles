@@ -113,6 +113,27 @@ class TentacleSegment {
         return createVector(this.length * Math.cos(a), this.length * Math.sin(a));
     }
 
+    calculateForce(forceVector, useBase = true) {
+        if (this.anchorType === ANCHOR_TYPE_HEAD && useBase === true)
+            return createVector(0, 0);
+        if (this.anchorType === ANCHOR_TYPE_TAIL && !useBase)
+            return createVector(0, 0);
+
+        const angle = (this.angle % Math.PI) + Math.PI;
+        const force = forceVector.copy().rotate((angle) * (useBase ? 1 : -1));
+
+        force.mult(this.mass);
+
+        if (this.angle > -NINETY_DEGREES && this.angle < NINETY_DEGREES)
+            force.y = -force.y;
+
+        return force;
+    }
+
+    // const force = forceVector.copy().div(this.mass);
+    // this.acceleration.add(force);
+    // this.velocity.add(this.acceleration);
+
     /**
      * Calculates the angle of the segment from the base to the tip.
      * @returns {p5.Vector} - The vector from the base of this segment to the tip of this segment
@@ -249,7 +270,6 @@ class TentacleSegment {
             let revPos = p5.Vector.sub(tipPos, this.calculateAngle());
             line(revPos.x, revPos.y, tipPos.x, tipPos.y);
 
-
             if (app.debugLevel > 1) {
                 // Note this: The following turns the tip into a knee, and the line drawn is the tibia
                 stroke("rgba(0, 255, 255, 0.5)");    // Set color to cyan transluscent
@@ -260,6 +280,23 @@ class TentacleSegment {
             app.drawCircleAt(this.base.position, "red", 24, 1);
             app.drawCircleAt(this.tip.position, "red", 12, 3);
         }
+
+        if (app.debugLevel > 0) { 
+            const gravityBase = this.calculateForce(createVector(0, 9.8 / this.mass)).mult(5);
+            const gravityTip = this.calculateForce(createVector(0, 9.8 / this.mass), false).mult(5);
+
+            strokeWeight(1);
+            noFill();
+            fill("rgba(255, 0, 255, 0.5)");    // Set color to magenta transluscent
+            stroke("rgba(255, 0, 255, 0.5)");    // Set color to magenta transluscent
+
+            line(basePos.x, basePos.y, basePos.x, basePos.y + gravityBase.y);    // Draw the line from the "knee" (this.tip) to the tip of the "tibia" (new tibiaPos)
+            ellipse(basePos.x, basePos.y + gravityBase.y, 6, 6);
+
+            line(tipPos.x, tipPos.y, tipPos.x, tipPos.y + gravityTip.y);    // Draw the line from the "knee" (this.tip) to the tip of the "tibia" (new tibiaPos)
+            ellipse(tipPos.x, tipPos.y + gravityTip.y, 6, 6);    
+        }
+        
     }
 
     draw(index, colorOverride = null) {
