@@ -13,10 +13,16 @@ class TentacleSegmentEndpoint {
         this.mass = typeof options.mass === "number" ? options.mass : 0.5;
         this.angle = typeof options.angle === "number" ? options.angle : 0;
         this.label = options.label || "";
+        this.forces = createVector(0, 0);   // Not used for now
     }
 
     getDescription(showLabelIfNotEmpty = true, newLine = "\n") {
         if (showLabelIfNotEmpty && !!this.label && this.length > 0) return this.label;
         return `Pos (${this.position.x.toFixed(2)}, ${this.position.y.toFixed(2)})\nAngle: ${(this.angle * DEGREE_RATIO).toFixed(1)}\nMass: ${this.mass.toFixed(2)}`;
+    }
+
+    applyForce(force) { 
+        this.position.add(force);
+        return force.copy();
     }
 }

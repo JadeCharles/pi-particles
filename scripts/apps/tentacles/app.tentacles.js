@@ -17,7 +17,12 @@ class TentacleApp {
         this.mounted = false;
         this.grid = null; // options.grid || null;
         this.showGrid = true;
-        
+        this.globalAngle = 0;
+        this.text = "";
+
+        this.isAuto = false;
+        this.autoState = 0;
+
         this.selectedIndex = -1;
         this.needsEventListeners = true;
         this.players = [];
@@ -25,7 +30,7 @@ class TentacleApp {
 
         this.lastMouseX = 0;
         this.lastMouseY = 0;
-        this.debugLevel = 0;
+        this.debugLevel = 1;
 
         if (!document.getElementById(this.elementId)) return;
 
@@ -72,10 +77,19 @@ class TentacleApp {
         document.addEventListener("keydown", (e) => {
             const player = (this.players.length > 0) ? this.players[0] : null;
             const tent = player?.tentacles[0];
-            
             const k = e.key.toLowerCase();
+
             switch (k) {
                 case "escape":
+                    break;
+                case "t":
+                case "keyt":
+                    this.autoState = 1;
+                    break;
+                case "a":
+                case "keya":
+                    if (this.isAuto) this.resetState();
+                    else this.isAuto = true;
                     break;
                 case "h":
                     break;
@@ -98,6 +112,14 @@ class TentacleApp {
         delete this.needsEventListeners;
     }
     
+    resetState() { 
+        for(let i = 0; i < this.players.length; i++) {
+            this.players[i].resetState();
+        }
+        this.isAuto = false;
+        this.autoState = 0;
+    }
+
     /**
      * Updates the size of the drawing canvas based on its html element container.
      * Each particle references this app object to get the global property values where needed.

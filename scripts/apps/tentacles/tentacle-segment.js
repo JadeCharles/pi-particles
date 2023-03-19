@@ -3,9 +3,9 @@ const ANCHOR_TYPE_TAIL = 2;
 const ANCHOR_TYPE_NONE = 0;
 const DEFAULT_SEGMENT_LENGTH = 20;
 const DEFAULT_SEGMENT_MAX_VELOCITY = 10;
-const DEFAULT_SEGMENT_MASS = 1;
+const DEFAULT_SEGMENT_MASS = 1.0;
 
-const G = -9.8 * (1);
+const G = 9.8 * (1);
 
 class TentacleSegment { 
     static colors = ["green"]; // ["#00820077", "green"];
@@ -55,6 +55,7 @@ class TentacleSegment {
         this.acceleration = createVector(0, 0);
         this.maxVelocity = options.maxVelocity;
         this.mass = options.mass;
+        this.forces = createVector(0, 0);
 
         if (typeof this.maxVelocity !== "number") this.maxVelocity = DEFAULT_SEGMENT_MAX_VELOCITY;
         if (typeof this.mass !== "number") this.mass = DEFAULT_SEGMENT_MASS;
@@ -87,52 +88,37 @@ class TentacleSegment {
         this.updateTipAngles(0, true);
     }
 
-    /**
-     * Updates the angles of the two endpoints of this segment (base and tip) - this.angle MUST be set before calling this method.
-     * @param {number} positionAnchor - 0 = Base: Position is updated relative to the base endpoint, 1 = Tip: Position is updated relative to the tip endpoint
-     */
-    updateTipAngles(positionAnchor = 0, updatePositions = true) { 
-        this.base.angle = this.angle;
-        //this.tip.angle = this.angle + Math.PI;
-        this.tip.angle = -this.angle;
-
-        if (!updatePositions) return;
-
-        const dir = this.calculateAngle();  //createVector(len * Math.cos(a), len * Math.sin(a));
-
-        if (positionAnchor === 0) {
-            this.tip.position.set(this.base.position.copy().add(dir));
-        } else {
-            const revPos = p5.Vector.sub(this.tip.position, dir);
-            this.base.position.set(revPos);
-        }
-    }
-    
     calculateAngle() {
         const a = this.angle;
         return createVector(this.length * Math.cos(a), this.length * Math.sin(a));
     }
 
-    calculateForce(forceVector, useBase = true) {
-        if (this.anchorType === ANCHOR_TYPE_HEAD && useBase === true)
-            return createVector(0, 0);
-        if (this.anchorType === ANCHOR_TYPE_TAIL && !useBase)
-            return createVector(0, 0);
+    /**
+     * Calculates the force vector to apply to this segment (ie, how much space to move/rotate this segment)
+     * @param {p5.Vector} forceVector - The force vector to apply to this segment
+     * @param {boolean} useBase - Calculate based on the base position and angle (true), or the tip position and angle (false)
+     * @returns {p5.Vector} - The force vector to apply to this segment
+     */
+    addForce(forceVector) {
+        // Invert the angles
+        const angle = this.angle;
+        const force = forceVector.copy();
 
-        const angle = (this.angle % Math.PI) + Math.PI;
-        const force = forceVector.copy().rotate((angle) * (useBase ? 1 : -1));
-
+        force.rotate(angle);
         force.mult(this.mass);
 
-        if (this.angle > -NINETY_DEGREES && this.angle < NINETY_DEGREES)
-            force.y = -force.y;
+        const my = (Math.abs(angle) > HALF_PI) ? -1 : 1;
+
+        const fmag = force.mag();
+        force.x *= (forceVector.x - force.y) / -fmag;
+        force.y *= my * (forceVector.y - force.x) / fmag;
 
         return force;
     }
 
-    // const force = forceVector.copy().div(this.mass);
-    // this.acceleration.add(force);
-    // this.velocity.add(this.acceleration);
+    resetState() { 
+        this.clearForces();
+    }
 
     /**
      * Calculates the angle of the segment from the base to the tip.
@@ -161,6 +147,10 @@ class TentacleSegment {
         return this.angle - (this.prevSegment?.angle || 0);
     }
 
+    clearForces() { 
+        this.forces.set(0, 0);
+    }
+
     updateAngleBy(angleDelta) { 
         if (typeof angleDelta !== "number") return;
 
@@ -169,24 +159,62 @@ class TentacleSegment {
     }
 
     /**
+     * Adds any forces to this segment, including gravity
+     */
+    updateForces() { 
+        const gravity = createVector(0, G / this.mass);
+        this.forces = this.addForce(gravity, true).mult(1.1);
+    }
+
+    /**
      * Do all calculations (update forces and angles) for this segment and its children. Update positions after this
      */
     updatePhysics() { 
-        
+        const app = TentacleApp.instance;
+
+        if (!app.isAuto && app.autoState === 0) {
+            this.forces = createVector(0, 0);
+            return;
+        }
+
+        this.updateForces();
         if (!!this.nextSegment) this.nextSegment.updatePhysics();
     }
 
+    /**
+     * Updates the angles of the two endpoints of this segment (base and tip) - this.angle MUST be set before calling this method.
+     * @param {number} positionAnchor - 0 = Base: Position is updated relative to the base endpoint, 1 = Tip: Position is updated relative to the tip endpoint
+     */
+    updateTipAngles(positionAnchor = 0, updatePositions = true) { 
+        this.base.angle = this.angle;
+        this.tip.angle = this.angle - PI;
+    }
+    
     /**
      * This sets (recursively) the base of the current segment to the tip of the previous segment (Only position values are updated -- No angles or forces)
      * @param {number} parentAngleDiff - The difference in angle between this segment and its parent
      */
     updatePositions(parentAngleDiff = 0) {
-        if (!!this.prevSegment) { 
-            this.base.position.set(this.prevSegment.tip.position);
-        }
+        const isHeadMovable = this.anchorType !== ANCHOR_TYPE_TAIL;
+        const isTipMovable = this.anchorType !== ANCHOR_TYPE_HEAD;
 
-        this.updateTipAngles(0, true);
-        if (!!this.nextSegment) this.nextSegment.updatePositions(parentAngleDiff);
+        if (!!this.prevSegment)
+            this.base.position.set(this.prevSegment.tip.position);
+
+        if (isHeadMovable)
+            this.base.position.add(this.forces);
+        
+        if (isTipMovable)
+            this.tip.position.add(this.forces);
+        
+        this.angle = this.tip.position.sub(this.base.position).heading();
+        const dir = this.calculateAngle();  //createVector(len * Math.cos(a), len * Math.sin(a));
+        this.tip.position.set(this.base.position.copy().add(dir));
+
+        this.updateTipAngles();
+
+        if (!!this.nextSegment)
+            this.nextSegment.updatePositions(parentAngleDiff);
     }
 
     /**
@@ -205,7 +233,8 @@ class TentacleSegment {
     
     drawLabels(distance = 170) {
         const app = TentacleApp.instance;
-        const isSelected = this.tentacle.selectedSegment === this;
+        const isSelected = this.tentacle.selectedSegment === this || app.debugLevel > 1;
+        
         strokeWeight(1);
 
         if (app.debugLevel <= 0) {
@@ -213,90 +242,139 @@ class TentacleSegment {
             return;
         }
 
+        if (!isSelected) return;
+
         const tipPos = this.tip.position;
         const basePos = this.base.position;
 
-        const m = basePos.y < this.tentacle.player.position.y ? -1 : 1;
+        //const m = basePos.y < this.tentacle.player.position.y ? -1 : 1;
+        const m = basePos.y < tipPos.y ? -1 : 1;
 
         const baseLabelPos = basePos.copy().add(createVector(0, distance * m)); //.setHeading(a));
-        const tipLabelPos = tipPos.copy().add(createVector(0, distance * m)); //.setHeading(a + offset));
+        const tipLabelPos = tipPos.copy().add(createVector(0, distance * -m)); //.setHeading(a + offset));
 
-        let red = 255;
-        let green = 255;
-        let blue = 150;
-        let alpha = isSelected ? 255 : 50;
+        const baseColor = "rgba(0, 255, 255, 1)";
+        const baseDimColor = "rgba(0, 255, 255, 0.5)";
 
-        if (this.tentacle.head === this) {
-            red -= 100;
-        } else if (this.tentacle.tail === this) {
-            green -= 100;
-        }
+        const tipColor = "rgba(255, 0, 255, 1)";
+        const tipDimColor = "rgba(255, 0, 255, 0.5)";
+        
+        noFill();
 
-        let colorName = "rgba(" + red + ", " + green + ", " + blue + ", " + (alpha / 255).toFixed(2) + ")";
-
-        stroke(red, green, blue, alpha - 30);
-        fill(red, green, blue, alpha - 30);
+        stroke(baseDimColor);
+        textAlign(LEFT, TOP);
 
         line(basePos.x, basePos.y, baseLabelPos.x, baseLabelPos.y);
         line(baseLabelPos.x + 1, baseLabelPos.y, baseLabelPos.x + 5, baseLabelPos.y);
-        text(this.base.getDescription(), baseLabelPos.x + 10, baseLabelPos.y);
+        text(this.base.getDescription(), baseLabelPos.x, baseLabelPos.y);
 
-        stroke(red, green, blue, alpha);
-        fill(red, green, blue, alpha);
-
+        stroke(tipDimColor);
         line(tipPos.x, tipPos.y, tipLabelPos.x, tipLabelPos.y);
         line(tipLabelPos.x + 1, tipLabelPos.y, tipLabelPos.x + 5, tipLabelPos.y);
-        text(this.tip.getDescription(), tipLabelPos.x + 10, tipLabelPos.y);
+        text(this.tip.getDescription(), tipLabelPos.x, tipLabelPos.y);
 
-        noStroke();
+        // ----- Big wheel circles
+
+        //noStroke();
         
-        colorName = "rgba(255, 255, 255, " + ((alpha - 30) / 255).toFixed(2) + ")";
-        app.drawCircleAt(tipPos, colorName, this.length);
+        // Draw white tip circle (large)
+        //app.drawCircleAt(tipPos, colorName, this.length);
 
-        colorName = "rgba(" + red + ", " + green + ", " + blue + ", " + ((alpha - 30) / 255).toFixed(2) + ")";
-        app.drawCircleAt(basePos, colorName, this.length);
+        // Draw base circle (large)
+        //app.drawCircleAt(basePos, colorName, this.length);
 
-        colorName = "rgba(255, 255, 255, " + (Math.max(0, alpha - 80) / 255).toFixed(2) + ")";
-        stroke(colorName);
-        line(tipPos.x, tipPos.y, tipPos.x + this.length/2, tipPos.y)
+        // White Horizontal Line in the base circle
+        //stroke(colorName);
+        //line(basePos.x, basePos.y, basePos.x + this.length/2, basePos.y)
 
-        colorName = "rgba(255, 255, 255, " + (Math.max(0, alpha - 80) / 255).toFixed(2) + ")";
-        stroke(colorName);
-        line(basePos.x, basePos.y, basePos.x + this.length/2, basePos.y)
+        // White Horizontal Line in the tip circle
+        //stroke(colorName);
+        //line(tipPos.x, tipPos.y, tipPos.x + this.length/2, tipPos.y)
 
-        if (isSelected) { 
-            strokeWeight(16);
-            stroke("rgba(255, 255, 255, 0.25)");
-            let revPos = p5.Vector.sub(tipPos, this.calculateAngle());
-            line(revPos.x, revPos.y, tipPos.x, tipPos.y);
+        // ------ End Big wheel circles
 
-            if (app.debugLevel > 1) {
-                // Note this: The following turns the tip into a knee, and the line drawn is the tibia
-                stroke("rgba(0, 255, 255, 0.5)");    // Set color to cyan transluscent
-                const tibiaPos = p5.Vector.sub(tipPos, this.calculateClamAngle());    // Get thet position for the tip of the "tibia"
-                line(tipPos.x, tipPos.y, tibiaPos.x, tibiaPos.y);    // Draw the line from the "knee" (this.tip) to the tip of the "tibia" (new tibiaPos)
-            }
-
-            app.drawCircleAt(this.base.position, "red", 24, 1);
-            app.drawCircleAt(this.tip.position, "red", 12, 3);
+        if (app.debugLevel > 1) {
+            // Note this: The following turns the tip into a knee, and the line drawn is the tibia
+            stroke("rgba(255, 255, 255, 0.5)");    // Set color to cyan transluscent
+            const tibiaPos = p5.Vector.sub(tipPos, this.calculateClamAngle());    // Get thet position for the tip of the "tibia"
+            line(tipPos.x, tipPos.y, tibiaPos.x, tibiaPos.y);    // Draw the line from the "knee" (this.tip) to the tip of the "tibia" (new tibiaPos)
         }
 
-        if (app.debugLevel > 0) { 
-            const gravityBase = this.calculateForce(createVector(0, 9.8 / this.mass)).mult(5);
-            const gravityTip = this.calculateForce(createVector(0, 9.8 / this.mass), false).mult(5);
+        app.drawCircleAt(this.base.position, "#FF0000", 24, 1);
+        app.drawCircleAt(this.tip.position, this.color, 8, 2);
 
-            strokeWeight(1);
-            noFill();
-            fill("rgba(255, 0, 255, 0.5)");    // Set color to magenta transluscent
-            stroke("rgba(255, 0, 255, 0.5)");    // Set color to magenta transluscent
+        strokeWeight(1);
 
-            line(basePos.x, basePos.y, basePos.x, basePos.y + gravityBase.y);    // Draw the line from the "knee" (this.tip) to the tip of the "tibia" (new tibiaPos)
-            ellipse(basePos.x, basePos.y + gravityBase.y, 6, 6);
+        // const grav = createVector(0, G / this.mass);
+        // const gravityForce = this.addForce(grav).mult(10);
 
-            line(tipPos.x, tipPos.y, tipPos.x, tipPos.y + gravityTip.y);    // Draw the line from the "knee" (this.tip) to the tip of the "tibia" (new tibiaPos)
-            ellipse(tipPos.x, tipPos.y + gravityTip.y, 6, 6);    
-        }
+        const gravityForce = p5.Vector.mult(this.forces, 10);
+
+        const lineLen = (this.length * 2);
+        const arcLen = (this.length / 2.0);
+
+        textAlign(LEFT, CENTER);
+
+        // Base End Horizontal Line and angle arc
+        stroke(baseDimColor);
+        line(basePos.x - lineLen, basePos.y, basePos.x + lineLen, basePos.y);
+        text("BASE: " + this.id, basePos.x + lineLen + 10, basePos.y);
+
+        let ae = this.getArcEndpoints(this.base.angle);
+        arc(basePos.x, basePos.y, arcLen, arcLen, ae.start, ae.end, OPEN);    // Base angle visual
         
+        // Tip End Horizontal Line and angle arc
+        stroke(tipDimColor);
+        line(tipPos.x - lineLen, tipPos.y, tipPos.x + lineLen, tipPos.y);
+        text("TIP: " + this.id, tipPos.x + lineLen + 10, tipPos.y);
+
+        ae = this.getArcEndpoints(this.tip.angle);
+        arc(tipPos.x, tipPos.y, arcLen, arcLen, ae.start, ae.end, OPEN);  // Tip angle visual
+
+        // Draw Forces/Gravity
+        noFill();
+        strokeWeight(1);
+
+        // Base Forces
+        const xx = gravityForce.x / 2;
+        const yy = gravityForce.y / 2;
+
+        stroke(baseDimColor);
+        line(tipPos.x, tipPos.y, tipPos.x + xx, tipPos.y + yy);
+        ellipse(tipPos.x + xx, tipPos.y + yy, 6, 6);
+
+        // X/Y Gravity
+        // stroke(baseDimColor);
+        // line(tipPos.x, tipPos.y, tipPos.x + gravityBase.x, tipPos.y);
+        // line(tipPos.x, tipPos.y, tipPos.x, tipPos.y + gravityBase.y);
+        // ellipse(tipPos.x + gravityBase.x, tipPos.y, 6, 6);
+        // ellipse(tipPos.x, tipPos.y + gravityBase.y, 6, 6);
+
+        // Tip Forces
+        const os = 1;
+        stroke(tipDimColor);
+        line(basePos.x, basePos.y, basePos.x + xx, basePos.y + yy);
+        ellipse(basePos.x + xx, basePos.y + yy, 6, 6);
+
+        // X/Y Gravity
+        // stroke(tipDimColor);
+        // line(basePos.x, basePos.y, basePos.x + gravityBase.x, basePos.y);
+        // line(basePos.x, basePos.y, basePos.x, basePos.y + gravityBase.y);
+        // ellipse(basePos.x + gravityBase.x, basePos.y, 6, 6);
+        // ellipse(basePos.x, basePos.y + gravityBase.y, 6, 6);
+    }
+
+    getArcEndpoints(angle) { 
+        let arcStart = 0;
+        let arcEnd = angle;
+            
+        if (arcEnd < 0) {
+            let temp = arcStart;
+            arcStart = arcEnd;
+            arcEnd = temp;
+        }
+
+        return { start: arcStart, end: arcEnd };
     }
 
     draw(index, colorOverride = null) {
@@ -304,9 +382,12 @@ class TentacleSegment {
 
         if (!tipPosition) throw new Error("Failed to draw segment. No tipPosition was set.");
 
+        const app = TentacleApp.instance;
         const color = colorOverride || (this.color || "#999999");
-
-        stroke(color);
+        const selectedSegment = app.players[0]?.tentacles[0].selectedSegment;
+        const isSelected = (selectedSegment === this);
+        const dimColor = !!selectedSegment ? "#FFFFFF17" : color; //"#FFFFFFAA";
+        stroke(isSelected ? color : dimColor);
         strokeWeight(3);
 
         const basePos = this.base.position;

@@ -84,6 +84,8 @@ class TentaclePlayer extends Player {
         this.tentacles.push(tentacle);
         if (this.selectedIndex < 0) this.selectedIndex = 0;
 
+        tentacle.selectedSegment = tentacle.tail;
+
         this.tentacleCount = this.tentacles.length;
         return tentacle;
     }
@@ -114,6 +116,12 @@ class TentaclePlayer extends Player {
             const yy = Math.max(y + dy * 0.7, -1);
 
             this.tentacles[i].setTarget(createVector(xx, yy));
+        }
+    }
+
+    resetState() {
+        for(let i = 0; i < this.tentacleCount; i++) {
+            this.tentacles[i].resetState();
         }
     }
 

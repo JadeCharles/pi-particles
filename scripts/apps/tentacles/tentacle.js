@@ -64,6 +64,14 @@ class Tentacle {
         return this.tail;
     }
 
+    resetState() { 
+        let cursor = this.head;
+        while (!!cursor) { 
+            cursor.resetState();
+            cursor = cursor.nextSegment;
+        }
+    }
+
     /**
      * Sets the target position (this.target) that the tip of the tentacle will move towards.
      * If this.target is null, the tentacle will not be moving (could be in a different state though)
@@ -86,6 +94,7 @@ class Tentacle {
 
         while (!!cursor) {
             cursor.angle = ax + newGlobalAngle;
+            console.log(cursor.id + " setting to " + cursor.angle.toFixed(4));
             cursor = cursor.nextSegment;
         }
 
@@ -101,16 +110,6 @@ class Tentacle {
      */
     setTailTipPosition(pos) {
         let cursor = this.tail;
-
-        // Check to see if it's out of reach.
-        const tentacleLength = this.totalLength;
-        const distance = p5.Vector.dist(pos, this.head.base.position);
-
-        if (distance > tentacleLength) {
-            this.head.angle = p5.Vector.sub(pos, this.head.base.position).heading();
-            this.straigtenTentacleSegments();
-            return;
-        }
 
         while (!!cursor) {
             cursor.tip.position.set(pos);

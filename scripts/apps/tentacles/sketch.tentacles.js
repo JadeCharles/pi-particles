@@ -51,6 +51,7 @@ function gravityTest(deg) {
 }
 
 function handleRightClick(mouseX, mouseY) { 
+    console.log("Right Click");
     const app = TentacleApp.instance;
     const player = app.players.length > 0 ? app.players[0] : null;
 
@@ -64,7 +65,8 @@ function handleRightClick(mouseX, mouseY) {
 }
 
 function handleLeftClick(mouseX, mouseY) {
-    if (gravityTest(0)) return;
+    console.log("Left Click");
+    //if (gravityTest(0)) return;
 
     const app = TentacleApp.instance;
 
@@ -201,8 +203,10 @@ function draw() {
     fill(255);
 
     // Draw the top label/caption
-    if (result?.player) { 
-        text("Player: " + result.player.name + ": " + (result?.player.notes || ""), 10, 20);
+    if (!!app.text) {
+        noStroke();
+        textAlign(LEFT, TOP);
+        text(app.text, 10, 20);
     }
 }
 
