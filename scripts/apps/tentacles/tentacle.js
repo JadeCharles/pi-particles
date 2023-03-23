@@ -4,17 +4,17 @@ class Tentacle {
             options = {x: 0, y: 0};
         }
 
-        if (!options.player) throw new Error("Tentacle must be created with a player.");
+        if (!options.agent) throw new Error("Tentacle must be created with a agent.");
 
         this.id = options.id || Math.floor(Math.random() * 9999999999).toString(36) + (new Date()).getTime().toString();
         this.color = options.color || null;
         this.name = (options.name || this.color) || "Tentacle";
-        this.player = options.player;
+        this.agent = options.agent;
         this.shouldUpdate = false;
         this.selectedSegment = null;
 
-        if (typeof options.x !== "number") options.x = this.player.position.x;
-        if (typeof options.y !== "number") options.y = this.player.position.y;
+        if (typeof options.x !== "number") options.x = this.agent.position.x;
+        if (typeof options.y !== "number") options.y = this.agent.position.y;
 
         /**
          * The position of the tip of the tentacle
@@ -54,12 +54,6 @@ class Tentacle {
 
         this.segmentCount++;
         this.totalLength += this.tail.length;
-
-        if (this.head === this.tail) {
-            console.warn("Append Segment Head:");
-            console.log(JSON.stringify(this.head.tip.position, null, 4));
-            console.error(JSON.stringify(this.position, null, 4));
-        }
 
         return this.tail;
     }
@@ -109,6 +103,9 @@ class Tentacle {
      * @returns 
      */
     setTailTipPosition(pos) {
+        this.tail.target = pos.copy();
+        console.warn(this.tail.id);
+        
         let cursor = this.tail;
 
         while (!!cursor) {
@@ -130,7 +127,7 @@ class Tentacle {
      */
     findGrabbablePosition(locationPos) {
         // const tentacleSpeed = this.tail.speed;
-        // const speedDifference = 1 - (tentacleSpeed / (tentacleSpeed + this.player.speed));
+        // const speedDifference = 1 - (tentacleSpeed / (tentacleSpeed + this.agent.speed));
 
         return locationPos.copy();
     }
@@ -139,13 +136,13 @@ class Tentacle {
      * Re-evaluates
      * @param {number} x - The x position of the target
      * @param {number} y - The y position of the target
-     * @returns {p5.Vector} - The distance between the furthest tail and the player's current position center
+     * @returns {p5.Vector} - The distance between the furthest tail and the agent's current position center
      */
     courseCorrect(newCoursePosition) {
 
         // TODO: Find a position that is within the reach of the furthest tentacle
 
-        // that is also "grabbable" by the player -- Random for now
+        // that is also "grabbable" by the agent -- Random for now
         // x -= Math.random() * 35;
         // y -= Math.random() * 35;
 
@@ -160,7 +157,7 @@ class Tentacle {
         
         this.target = null;
 
-        this.player.reSortTentacles();
+        this.agent.reSortTentacles();
 
         if (typeof arrivalResult === "number")
             this.state = arrivalResult;
@@ -171,19 +168,19 @@ class Tentacle {
         return p5.Vector.dist(this.head.position, this.tail.tipPosition);
     }
 
-    updatePhysics(index) {
+    updatePhysics(index, isAuto) {
         if (!this.head) throw new Error("No tentacle to updatePhysics with");
 
         let movementForces = createVector(0, 0);
 
-        this.head.updatePhysics(index);
+        this.head.updatePhysics(isAuto);
 
         return movementForces;
     }
 
     /**
      * Updates the coordinates of the tentacle head base after all forces have been acted upon and stored, now update the positions based on them
-     * @param {number} index - The index of the tentacle in the player's tentacle array
+     * @param {number} index - The index of the tentacle in the agent's tentacle array
      * @returns {boolean}
      */
     updatePositions(index) { 
@@ -191,34 +188,27 @@ class Tentacle {
         // Prioritize the anchors (in this case, the tail)
         if (!this.head) return false;
         
-        this.head.base.position.set(this.player.position);
+        this.head.base.position.set(this.agent.position);
         this.head.updatePositions();
         
         return true;
     }
 
-    drawTentacle(index) {
-        const summary = { count: 0 };
-        if (!this.head) return summary; 
+    draw(index, selectedSegmentId = null) {
+        if (!this.head) return; 
 
         const colorOverride = null;
 
         // Recursively draw all segments
-        this.head.draw(0, colorOverride);
+        this.head.draw(selectedSegmentId, colorOverride);
 
-        if (this.debug) {
+        if (this.debugLevel > 0) {
             if (!!this.target) { 
-                TentacleApp.instance?.drawCircleAt(this.target, "#00FF0088", 12, "Target");
+                App.drawCircleAt(this.target, "#00FF0088", 12, "Target");
             }
-            //
         }
 
-        text("" + (this.notes || ""), 10, 50 + (index * 20));
-
-
-        return {
-            count: 0
-        };
+        text(this.name + ": " + (this.notes || ""), 10, 50 + (index * 20));
     }
 
     

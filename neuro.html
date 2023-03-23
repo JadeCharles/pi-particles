@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Neuro Life</title>
+    <script src="scripts/infrastructure/jquery-3.6.3.min.js"></script>
+    <script src="scripts/infrastructure/p5.js"></script>
+    <script src="scripts/apps/app.js"></script>
+    <script src="scripts/apps/agent.js"></script>
+
+    <script src="scripts/apps/tentacles/tentacle-tip.js"></script>
+    <script src="scripts/apps/tentacles/tentacle-segment.js"></script>
+    <script src="scripts/apps/tentacles/tentacle.js"></script>
+    <script src="scripts/apps/tentacles/tentacle-agent.js"></script>
+
+    <script src="scripts/apps/neuro/models/activation-function.js"></script>
+    <script src="scripts/apps/neuro/models/training-set.js"></script>
+    <script src="scripts/apps/neuro/models/neuron.js"></script>
+    <script src="scripts/apps/neuro/models/neuron-connector.js"></script>
+    <script src="scripts/apps/neuro/models/neuron-layer.js"></script>
+
+    <script src="scripts/apps/neuro/feed-forward.js"></script>
+    <script src="scripts/apps/neuro/app.neuro.js"></script>
+    <script src="scripts/apps/neuro/sketch.neuro.js"></script>
+
+    <link href="css/fontawesome/css/fontawesome.min.css" rel="stylesheet">
+    <link href="css/fontawesome/css/brands.min.css" rel="stylesheet">
+    <link href="css/fontawesome/css/solid.min.css" rel="stylesheet">
+
+    <link href="css/styles.css" type="text/css" rel="stylesheet" />
+</head>
+
+<body>
+    <header>
+        <div>
+            <div id="ui-container" style="display:none;">
+                <div id="ui-legend">
+
+                </div>
+            </div>
+
+            <h1 id="particle-life-header">
+                <span>Neuro - Neural Network</span>
+
+                <span class="menu-item" id="menu-item-legend">
+                    <span class="title" id="legend">
+                        <label class="shown"><i class="fa-sharp fa-regular fa-caret-down"></i></label>
+                        <label class="not-shown"><i class="fa-sharp fa-regular fa-caret-right"></i></label>
+                        <label>Actions</label>
+                    </span>
+                    <span class="panel" id="legend-panel">
+                        <span class="content">
+                            <span class="stack footer keys">
+                                <h3>Input Values</h3>
+                                <ul id="input-layer-values">
+                                    <li>
+                                        <span><input checked type="checkbox" id="train-flag" /></span>
+                                        <span>Use as Training</span>
+                                    </li>
+                                </ul>
+                                <span><button id="input-value-button">Go</button></span>
+                            </span>
+                        </span>
+                    </span>
+                </span>
+
+                <span class="menu-item" id="menu-item-settings">
+                    <span class="title" id="settings">
+                        <label class="shown"><i class="fa-sharp fa-regular fa-caret-down"></i></label>
+                        <label class="not-shown"><i class="fa-sharp fa-regular fa-caret-right"></i></label>
+                        <label>Model</label>
+                    </span>
+                    <span class="panel" id="settings-panel">
+                        <span class="content">
+                            <ul>
+                                <li>
+                                    <span class="stack">
+                                        <strong>Input Parameters: <strong id="input-count">2</strong></strong>
+                                        <p>Length of the input vector</p>
+                                        <span><input type="range" min="2" max="2400.0" value="2" onchange="onRangeChange(this, 'setInputCount')" oninput="onRangeViewChange(this, 'input-count')" class="slider" id="input-count-value" /></span>
+                                    </span>
+                                </li>
+
+                                <li>
+                                    <span class="stack">
+                                        <strong>Hidden Layers: <strong id="hidden-layer-count">2</strong></strong>
+                                        <p>Number of inner (hidden) layers</p>
+                                        <span><input type="range" min="0" max="16" value="2" step="1" onchange="onRangeChange(this, 'setSpeed')" oninput="onRangeViewChange(this, 'hidden-layer-count')" class="slider" id="hidden-layer-count-value" /></span>
+                                    </span>
+                                </li>
+
+                                <li>
+                                    <span class="stack">
+                                        <strong>Output Labels: <strong id="output-count">2</strong></strong>
+                                        <p>Number of labels</p>
+                                        <span><input type="range" min="2" max="2400.0" value="2" onchange="onRangeChange(this, 'setOutputCount')" oninput="onRangeViewChange(this, 'output-count')" class="slider" id="output-count-value" /></span>
+                                    </span>
+                                </li>
+
+                            </ul>
+                        </span>
+                    </span>
+                </span>
+
+                <span id="colors"></span>
+                <span id="controls"></span>
+            </h1>
+
+            <nav>
+                <ul>
+                    <li><a href="https://www.jadecharles.com/" target="_jade"><i class="fa-solid fa-user"></i> JadeCharles.com</a></li>
+                    <li><a href="https://www.penumbralabs.io" target="_pi"><i class="fa-solid fa-flask"></i> PenumbraLabs.io</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main-canvas"></main>
+
+    <footer>
+        <p id="footer">
+            v1.0.0
+            <span>
+                <a href="index.html">Particles</a> |
+                <a href="tentacles.html">Tentacle Engine</a>
+            </span>
+        </p>
+    </footer>
+
+    <script src="scripts/infrastructure/ui/ui.js"></script>
+    <script src="scripts/infrastructure/ui/animation-controls.js"></script>
+    <script src="scripts/apps/structures/game-grid.js"></script>
+
+    <script>
+        /**
+        * This is all the form event handlers and value setters
+        */
+
+//        const href = "https://portal.cardsync.io/";
+//        //const href = "https://stage.portal.cardsync.io";
+//        const pattern = "http(s)*://(dev|staging|stage|sandbox|api|prod){0,1}(\\.){0,1}portal\\.(paylani\\.com|cardsync\\.io)+"; 
+//        const matches = href.match(pattern);
+//        const matchCount = matches?.length || 0;
+//        console.warn(href);
+//        console.warn(JSON.stringify(matches, null, 4));
+
+        NeuroApp.init();
+
+        $(document).ready(() => { 
+            console.warn("Ready.");
+            
+            const button = $("#input-value-button");
+            button.off();
+            button.click((ev) => { 
+                const isTraining = $('#train-flag').is(":checked");
+                const inputs = getInputsFromForm();
+
+                if (isTraining) {
+                    const expectedValue = trainSingle(inputs);
+                    const resultNeuron = NeuroApp.instance.network.outputLayer.neurons[0];
+                    console.log("Training: " + inputs + " => (Expected: " + expectedValue + ") => " + resultNeuron.value.toFixed(2));
+                } else { 
+                    console.log("Submit: " + inputs);
+                }
+            });
+
+            setTimeout(() => { 
+                NeuroApp.instance.setup();
+                refreshInputFields();
+                NeuroApp.instance.getInputValues = getInputsFromForm;
+            }, 10);
+        });
+
+        function trainSingle(inputs) { 
+            const expectedValue = inputs[0] === inputs[1] ? 0 : 1;
+
+            let trainingSet = new TrainingSet();
+            let index = 0;
+
+            // Get/set index, given the inputs
+            TrainingSet.xorInputs.map((ip, i) => {
+                if (ip[0] === inputs[0] && ip[1] === inputs[1])
+                    index = i;
+            });
+
+            trainingSet.trainIndex(NeuroApp.instance.network, index, 0);
+            
+            NeuroApp.instance.text = "Inputs: [" + inputs.join(", ") + "]\n" +
+                "Expected: " + trainingSet.expectedOutputList[index][0].toFixed(2) + "\n" +
+                "Actual  : " + NeuroApp.instance.network.outputLayer.neurons[0].value.toFixed(2) + "\n" +
+                "SumSq Err: " + trainingSet.networkError.toFixed(6) + "\n" + 
+                "";
+
+            return expectedValue;
+        }
+
+        function refreshInputFields(minValue = 0, maxValue = 1.0, step = 1) {
+            const elementList = $('#input-layer-values');
+
+            const inputNeurons = NeuroApp.instance.network.inputLayer.neurons.filter((n) => !n.isBias).map((n, index) => {
+                const elementId = 'input_param_' + index.toString();
+                const element = $('<li class="input-element"><input type="number" min="' + minValue + '" max="' + maxValue + '" value="' + n.value + '" id="' + elementId + '" /></li>');
+
+                return element;
+            });
+
+            $('.input-element').remove();
+            elementList.append(inputNeurons);
+            return elementList;
+        }
+
+        function getInputsFromForm(sender) { 
+            let inputs = [];
+            let i = 0;
+
+            while (true) {
+                const element = $(`#input_param_${i}`);
+
+                if (!!element.get(0)) { 
+                    const value = parseFloat(element.val())
+                    
+                    if (isNaN(value)) { 
+                        const message = "Bad value: " + element.val();
+                        alert(message);
+                        throw new Error(message);
+                        return;
+                    }
+
+                    inputs.push(value);
+                    i++;
+                } else return inputs;
+            }
+
+            return inputs;
+        }
+
+    </script>
+</body>
+
+</html>

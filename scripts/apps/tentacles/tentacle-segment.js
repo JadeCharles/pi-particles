@@ -93,28 +93,7 @@ class TentacleSegment {
         return createVector(this.length * Math.cos(a), this.length * Math.sin(a));
     }
 
-    /**
-     * Calculates the force vector to apply to this segment (ie, how much space to move/rotate this segment)
-     * @param {p5.Vector} forceVector - The force vector to apply to this segment
-     * @param {boolean} useBase - Calculate based on the base position and angle (true), or the tip position and angle (false)
-     * @returns {p5.Vector} - The force vector to apply to this segment
-     */
-    addForce(forceVector) {
-        // Invert the angles
-        const angle = this.angle;
-        const force = forceVector.copy();
-
-        force.rotate(angle);
-        force.mult(this.mass);
-
-        const my = (Math.abs(angle) > HALF_PI) ? -1 : 1;
-
-        const fmag = force.mag();
-        force.x *= (forceVector.x - force.y) / -fmag;
-        force.y *= my * (forceVector.y - force.x) / fmag;
-
-        return force;
-    }
+    
 
     resetState() { 
         this.clearForces();
@@ -148,7 +127,8 @@ class TentacleSegment {
     }
 
     clearForces() { 
-        this.forces.set(0, 0);
+        this.tip.forces.set(0, 0);
+        this.base.forces.set(0, 0);
     }
 
     updateAngleBy(angleDelta) { 
@@ -163,22 +143,28 @@ class TentacleSegment {
      */
     updateForces() { 
         const gravity = createVector(0, G / this.mass);
-        this.forces = this.addForce(gravity, true).mult(1.1);
+        
+        if (this.prevSegment)
+            this.base.addForce(gravity);
+        
+        if (this.nextSegment) {
+            this.tip.addForce(gravity);
+        }
     }
 
     /**
      * Do all calculations (update forces and angles) for this segment and its children. Update positions after this
      */
-    updatePhysics() { 
-        const app = TentacleApp.instance;
-
-        if (!app.isAuto && app.autoState === 0) {
+    updatePhysics(isAuto) { 
+        if (isAuto) {
             this.forces = createVector(0, 0);
             return;
         }
 
         this.updateForces();
-        if (!!this.nextSegment) this.nextSegment.updatePhysics();
+        
+        if (!!this.nextSegment)
+            this.nextSegment.updatePhysics(isAuto);
     }
 
     /**
@@ -198,15 +184,12 @@ class TentacleSegment {
         const isHeadMovable = this.anchorType !== ANCHOR_TYPE_TAIL;
         const isTipMovable = this.anchorType !== ANCHOR_TYPE_HEAD;
 
+        this.base.updatePositions();
+        this.tip.updatePositions();
+
         if (!!this.prevSegment)
             this.base.position.set(this.prevSegment.tip.position);
 
-        if (isHeadMovable)
-            this.base.position.add(this.forces);
-        
-        if (isTipMovable)
-            this.tip.position.add(this.forces);
-        
         this.angle = this.tip.position.sub(this.base.position).heading();
         const dir = this.calculateAngle();  //createVector(len * Math.cos(a), len * Math.sin(a));
         this.tip.position.set(this.base.position.copy().add(dir));
@@ -232,13 +215,13 @@ class TentacleSegment {
     }
     
     drawLabels(distance = 170) {
-        const app = TentacleApp.instance;
-        const isSelected = this.tentacle.selectedSegment === this || app.debugLevel > 1;
+        const debugLevel = this.tentacle.agent.debugLevel || 0;
+        const isSelected = this.tentacle.selectedSegment === this || debugLevel > 1;
         
         strokeWeight(1);
 
-        if (app.debugLevel <= 0) {
-            if (isSelected) app.drawCircleAt(this.base.position, "red", 24, 1);
+        if (debugLevel <= 0) {
+            if (isSelected) App.drawCircleAt(this.base.position, "red", 24, 1);
             return;
         }
 
@@ -247,7 +230,7 @@ class TentacleSegment {
         const tipPos = this.tip.position;
         const basePos = this.base.position;
 
-        //const m = basePos.y < this.tentacle.player.position.y ? -1 : 1;
+        //const m = basePos.y < this.tentacle.agent.position.y ? -1 : 1;
         const m = basePos.y < tipPos.y ? -1 : 1;
 
         const baseLabelPos = basePos.copy().add(createVector(0, distance * m)); //.setHeading(a));
@@ -278,10 +261,10 @@ class TentacleSegment {
         //noStroke();
         
         // Draw white tip circle (large)
-        //app.drawCircleAt(tipPos, colorName, this.length);
+        //App.drawCircleAt(tipPos, colorName, this.length);
 
         // Draw base circle (large)
-        //app.drawCircleAt(basePos, colorName, this.length);
+        //App.drawCircleAt(basePos, colorName, this.length);
 
         // White Horizontal Line in the base circle
         //stroke(colorName);
@@ -293,15 +276,15 @@ class TentacleSegment {
 
         // ------ End Big wheel circles
 
-        if (app.debugLevel > 1) {
+        if (this.tentacle.agent.debugLevel > 1) {
             // Note this: The following turns the tip into a knee, and the line drawn is the tibia
             stroke("rgba(255, 255, 255, 0.5)");    // Set color to cyan transluscent
             const tibiaPos = p5.Vector.sub(tipPos, this.calculateClamAngle());    // Get thet position for the tip of the "tibia"
             line(tipPos.x, tipPos.y, tibiaPos.x, tibiaPos.y);    // Draw the line from the "knee" (this.tip) to the tip of the "tibia" (new tibiaPos)
         }
 
-        app.drawCircleAt(this.base.position, "#FF0000", 24, 1);
-        app.drawCircleAt(this.tip.position, this.color, 8, 2);
+        App.drawCircleAt(this.base.position, "#FF0000", 24, 1);
+        App.drawCircleAt(this.tip.position, this.color, 8, 2);
 
         strokeWeight(1);
 
@@ -377,16 +360,15 @@ class TentacleSegment {
         return { start: arcStart, end: arcEnd };
     }
 
-    draw(index, colorOverride = null) {
+    draw(selectedId, colorOverride = null) {
         const tipPosition = this.tip.position;
 
         if (!tipPosition) throw new Error("Failed to draw segment. No tipPosition was set.");
 
-        const app = TentacleApp.instance;
         const color = colorOverride || (this.color || "#999999");
-        const selectedSegment = app.players[0]?.tentacles[0].selectedSegment;
-        const isSelected = (selectedSegment === this);
-        const dimColor = !!selectedSegment ? "#FFFFFF17" : color; //"#FFFFFFAA";
+        const isSelected = (selectedId === this.id);
+        const dimColor = !!selectedId ? "#FFFFFF17" : color; //"#FFFFFFAA";
+
         stroke(isSelected ? color : dimColor);
         strokeWeight(3);
 
@@ -399,7 +381,7 @@ class TentacleSegment {
         ellipse(tipPosition.x, tipPosition.y, 6, 6);
 
         if (!!this.nextSegment)
-            this.nextSegment.draw(index + 1, false, colorOverride);
+            this.nextSegment.draw(false, colorOverride);
         
         this.drawLabels();
     }

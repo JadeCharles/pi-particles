@@ -53,15 +53,15 @@ function gravityTest(deg) {
 function handleRightClick(mouseX, mouseY) { 
     console.log("Right Click");
     const app = TentacleApp.instance;
-    const player = app.players.length > 0 ? app.players[0] : null;
+    const agent = app.agents.length > 0 ? app.agents[0] : null;
 
-    if (!player) { 
-        console.warn("No Player.");
+    if (!agent) { 
+        console.warn("No Agent.");
         return;
     }
 
     const m = createVector(mouseX, mouseY);
-    player.tentacles[0].setTailTipPosition(m, 3);
+    agent.tentacles[0].setTailTipPosition(m, 3);
 }
 
 function handleLeftClick(mouseX, mouseY) {
@@ -70,14 +70,14 @@ function handleLeftClick(mouseX, mouseY) {
 
     const app = TentacleApp.instance;
 
-    if (app.players.length === 0) { 
+    if (app.agents.length === 0) { 
         const options = { x: mouseX, y: mouseY, color: "green", name: "Jade", tentacleCount: 1, tentacleSegmentLength: 128, tentacleSegmentCount: 4};
-        app.createPlayer(options);
+        app.createAgent(options);
     } else {
-        const selectedPlayer = app.players[0];
+        const selectedAgent = app.agents[0];
         const mousePosition = createVector(mouseX, mouseY);
         
-        app.players[0].tentacles[0].shouldUpdate = true;
+        app.agents[0].tentacles[0].shouldUpdate = true;
     }
 }
 
@@ -136,15 +136,16 @@ function mouseDragged(e) {
     const app = TentacleApp.instance;
     if (app.lastMouseX === null) return;
 
-    const player = app.players.length > 0 ? app.players[0] : null;
-
+    const agent = app.agents.length > 0 ? app.agents[0] : null;
+    if (!agent) return;
+    
     if (app.button === 2) { 
         const m = createVector(mouseX, mouseY);
-        player.tentacles[0].setTailTipPosition(m, 3);
+        agent.tentacles[0].setTailTipPosition(m, 3);
         return;
     }
 
-    const selectedJoint = player?.tentacles[0].selectedSegment;
+    const selectedJoint = agent?.tentacles[0].selectedSegment;
 
     if (!!selectedJoint) {
         console.log("Drag Good.");
@@ -168,7 +169,7 @@ function debugMoveJoint(app, joint) {
 // Drawing Methods - Always on the bottom of the file
 
 /**
- * Draws the visual representation of where the selectedPlayer is headed to (targeting)
+ * Draws the visual representation of where the selectedAgent is headed to (targeting)
  * @returns 
  */
 function drawTarget() { 
@@ -192,12 +193,7 @@ function draw() {
     const app = TentacleApp.instance;
 
     app.update();
-
-    background(0);  // Blank out the background.
-
-    if (!!app.grid) app.grid.drawGrid();
-
-    const result = app.drawPlayers();
+    app.draw();
 
     // Set pen color to white
     fill(255);

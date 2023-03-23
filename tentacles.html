@@ -6,11 +6,12 @@
     <title>Tentacle Life</title>
     <script src="scripts/infrastructure/jquery-3.6.3.min.js"></script>
     <script src="scripts/infrastructure/p5.js"></script>
-    <script src="scripts/apps/players/player.js"></script>
+    <script src="scripts/apps/app.js"></script>
+    <script src="scripts/apps/agent.js"></script>
     <script src="scripts/apps/tentacles/tentacle-tip.js"></script>
     <script src="scripts/apps/tentacles/tentacle-segment.js"></script>
     <script src="scripts/apps/tentacles/tentacle.js"></script>
-    <script src="scripts/apps/tentacles/tentacle-player.js"></script>
+    <script src="scripts/apps/tentacles/tentacle-agent.js"></script>
     <script src="scripts/apps/tentacles/app.tentacles.js"></script>
     <script src="scripts/apps/tentacles/sketch.tentacles.js"></script>
 
@@ -102,7 +103,13 @@
     <main id="main-canvas"></main>
 
     <footer>
-        <p id="legend-test">v1.0.0</p>
+        <p id="footer">
+            v1.0.0
+            <span>
+                <a href="index.html">Particles</a> |
+                <a href="neuro.html">Basic Neural Network</a>
+            </span>
+        </p>
     </footer>
 
     <script src="scripts/infrastructure/ui/ui.js"></script>
@@ -151,7 +158,7 @@
             app[func](input.value);
         }
 
-        TentacleApp.instance.createPlayer();
+        TentacleApp.instance.createAgent();
 
     </script>
 </body>

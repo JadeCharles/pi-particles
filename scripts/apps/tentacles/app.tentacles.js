@@ -1,4 +1,4 @@
-class TentacleApp { 
+class TentacleApp extends App { 
     static instance = new TentacleApp();
 
     static init() {
@@ -7,76 +7,54 @@ class TentacleApp {
     }
 
     constructor(...args) { 
-        const options = args[0] || {};
-        this.name = "Tentacle App";
-        this.elementId = "main-canvas";
-        this.ui = null;
+        super(args);
 
-        this.width = 100;
-        this.height = 100;
-        this.mounted = false;
+        this.name = "Tentacle App";
+
         this.grid = null; // options.grid || null;
         this.showGrid = true;
-        this.globalAngle = 0;
-        this.text = "";
 
         this.isAuto = false;
         this.autoState = 0;
 
         this.selectedIndex = -1;
-        this.needsEventListeners = true;
-        this.players = [];
+        this.agents = [];
         this.markers = [];
 
-        this.lastMouseX = 0;
-        this.lastMouseY = 0;
-        this.debugLevel = 1;
-
-        if (!document.getElementById(this.elementId)) return;
+        if (!document.getElementById(this.elementId)) { 
+            return;
+        }
 
         this.updateCanvasSize();
-        this.addEventListeners();
+        if (!!this.addEventListeners()) console.log("Tentacle App mounted");
+        else if (this.addEventListeners > 1) console.warn("No canvas mounted");
     }
 
-    createPlayer(options) { 
+    createAgent(options) {
         if (!this.mounted) {
-            console.warn("App not mounted yet");
+            if (this.needsEventListeners > 1) console.warn("App not mounted yet: " + this.needsEventListeners);
             return null;
         }
 
-        if (this.needsEventListeners) this.addEventListeners();
+        if (this.needsEventListeners)
+            this.addEventListeners();
 
         if (!options) options = {};
         options.app = this;
 
-        this.players.push(new TentaclePlayer(options));
+        this.agents.push(new TentacleAgent(options));
     }
 
     addEventListeners() {
-        // Suppress right click when over the canvas
-        const canvas = document?.querySelector("canvas");
-        if (!canvas) { 
-            console.warn("No canvas to add event listener to");
-            return;
-        }
-
-        console.log("Canvas context menu nullifying");
-
-        canvas.addEventListener("contextmenu", (e) => {
-            if (typeof e?.preventDefault === "function") e.preventDefault();
-            if (typeof e?.stopPropagation === "function") e.stopPropagation();
-            if (typeof e?.stopEvent === "function") e.stopEvent();
-            if (typeof e?.stopEventPropagation === "function") e.stopEventPropagation();
-
-            return false;
-        });
+        const canvas = super.addEventListeners(true);
+        if (!canvas) return;
 
         // Handle Key Press
 
         // Generally add keyboard event handlers
         document.addEventListener("keydown", (e) => {
-            const player = (this.players.length > 0) ? this.players[0] : null;
-            const tent = player?.tentacles[0];
+            const agent = (this.agents.length > 0) ? this.agents[0] : null;
+            const tent = agent?.tentacles[0];
             const k = e.key.toLowerCase();
 
             switch (k) {
@@ -90,6 +68,7 @@ class TentacleApp {
                 case "keya":
                     if (this.isAuto) this.resetState();
                     else this.isAuto = true;
+                    console.log("A: " + this.isAuto);
                     break;
                 case "h":
                     break;
@@ -102,90 +81,58 @@ class TentacleApp {
                     break;
                 case "d":
                 case "keyd":
-                    this.debugLevel++;
-                    if (this.debugLevel > 2) this.debugLevel = 0;
+                    const agent = this.agents[0];
+                    if (!!agent) { 
+                        agent.debugLevel++;
+
+                        if (agent.debugLevel > 2)
+                            agent.debugLevel = 0;
+                    }
                     break;
             }
         });
 
-        console.log("Added event listeners");
-        delete this.needsEventListeners;
+        console.log("Added event listeners? " + (canvas !== null).toString());
+
+        return canvas;
     }
     
     resetState() { 
-        for(let i = 0; i < this.players.length; i++) {
-            this.players[i].resetState();
+        for(let i = 0; i < this.agents.length; i++) {
+            this.agents[i].resetState();
         }
         this.isAuto = false;
         this.autoState = 0;
     }
 
-    /**
-     * Updates the size of the drawing canvas based on its html element container.
-     * Each particle references this app object to get the global property values where needed.
-     * Height/width, in this case
-     * @param {string} elementId - The html elementId (<main id=""></main>) of the element to use for the canvas size
-     * @returns {object} - The canvas size object { width: number, height: number }
-     */
-    updateCanvasSize(elementId) {
-        if (typeof elementId !== "string" || elementId.length === 0)
-            elementId = this.elementId;
-
-        const canvas = document.getElementById(elementId);
-
-        if (!canvas) {
-            const message = (typeof elementId !== "string") ?
-                "There was no elementId provided to the updateCanvasSize() function." :
-                "Be sure to add a <main></main> element with id='" + elementId + "' to the html page."
-            
-            throw new Error("No canvas found: " + message);
-        }
-        
-        this.width = typeof canvas?.offsetWidth === 'number' ? canvas.offsetWidth : 800;
-        this.height = typeof canvas?.offsetHeight === 'number' ? canvas.offsetHeight - 1 : 500;
-    }
-    
     update() { 
         let i = 0;
-        const players = TentacleApp.instance.players;
-        const playerCount = players.length;
+        const agents = TentacleApp.instance.agents;
+        const agentCount = agents.length;
+        const isAuto = !(!this.isAuto && this.autoState === 0);
 
-        while (i < playerCount) { 
-            const p = players[i];
-
-            if (typeof p.update !== "function") { 
-                for (let x in p) { 
-                    console.log(x);
-                }
-                throw new Error("Not a function: ");
-            }
-
-            p.update(i);
+        while (i < agentCount) { 
+            agents[i].update(i, isAuto);
             i++;
         }
 
         // Return an object in case we want to add more properties later.
         return {
-            count: playerCount
+            count: agentCount
         };
     }
 
-    drawCircleAt(pos, color = null, size = 16, thickness = 1) { 
-        if (!pos) return;
+    draw() { 
+        this.refreshCanvas();
         
-        stroke(color || "#CCCCCC");
-        strokeWeight(thickness);
-        noFill();
-        ellipse(pos.x, pos.y, size, size);
-    }
+        if (!!this.grid) this.grid.drawGrid();
 
-    drawPlayers() { 
         let i = 0;
-        const players = TentacleApp.instance.players;
-        const playerCount = players.length;
+        const agents = TentacleApp.instance.agents;
+        const agentCount = agents.length;
 
-        while (i < playerCount) { 
-            players[i].draw(i);
+        while (i < agentCount) { 
+            agents[i].draw(i, this.selectedSegment?.id);
             i++;
         }
 
@@ -213,8 +160,8 @@ class TentacleApp {
 
         // Return an object in case we want to add more properties later.
         return {
-            count: playerCount,
-            player: playerCount > 0 ? players[0] : null
+            count: agentCount,
+            agent: agentCount > 0 ? agents[0] : null
         };
     }
 }

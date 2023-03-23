@@ -21,8 +21,37 @@ class TentacleSegmentEndpoint {
         return `Pos (${this.position.x.toFixed(2)}, ${this.position.y.toFixed(2)})\nAngle: ${(this.angle * DEGREE_RATIO).toFixed(1)}\nMass: ${this.mass.toFixed(2)}`;
     }
 
-    applyForce(force) { 
-        this.position.add(force);
-        return force.copy();
+ /**
+     * Calculates the force vector to apply to this segment (ie, how much space to move/rotate this segment)
+     * @param {p5.Vector} forceVector - The force vector to apply to this segment
+     * @param {boolean} useBase - Calculate based on the base position and angle (true), or the tip position and angle (false)
+     * @returns {p5.Vector} - The force vector to apply to this segment
+     */
+    addForce(forceVector, angle = null) {
+        // Invert the angles
+        if (typeof angle !== "number")
+            angle = this.angle;
+        
+        const force = forceVector.copy();
+
+        force.rotate(angle);
+        force.mult(this.mass);
+
+        const my = (Math.abs(angle) > HALF_PI) ? -1 : 1;
+
+        const fmag = force.mag();
+        force.x *= (forceVector.x - force.y) / -fmag;
+        force.y *= my * (forceVector.y - force.x) / fmag;
+
+        this.forces.add(force);
+
+        return force;
+    }
+    
+    updatePositions() { 
+        this.position.add(this.forces);
+        this.forces.set(0, 0);
+        
+        return this.position;
     }
 }

@@ -1,15 +1,20 @@
-class TentaclePlayer extends Player { 
+class TentacleAgent extends Agent { 
     constructor(options) { 
         super(options);
         if (!options) options = {};
 
         this.selectedIndex = -1;
+        this.health = options.health || 100;
         this.tentacles = options.tentacles || [];
-        this.name = options.name || "Player";
+        this.backgroundColor = typeof options.backgroundColor === "string" || options.backgroundColor === null ?
+            options.backgroundColor :
+            "black";
+        
+        this.name = options.name || "Tentacle Agent";
         this.color = options.color || "white";
         this.app = options.app || null;
         this.notes = null;
-        this.debug = false;
+        this.debugLevel = 0;
 
         this.speed = (options.speed || options.speed) || 1.5;
         this.accelerationScalar = (options.acceleration || options.accelerationValue) || 0.1;
@@ -21,24 +26,21 @@ class TentaclePlayer extends Player {
         this.targetSpeed = createVector(0, 0);  // Max speed vector (x/y direction)
         this.targetScalarSpeed = 0; // Max speed as a decimal value
 
-        this.target = null; // The target the player is moving towards
+        this.target = null; // The target the agent is moving towards
 
         const pos = this.position;
         const tentacleSegmentLength = options.tentacleSegmentLength || 24;
         const tentacleSegmentCount = options.tentacleSegmentCount || (options.tentacleSegmentCount || 10);
-        const tentacleCount = options.tentacleCount || 1;
+        const tentacleCount = options.tentacleCount || 0;
 
         for (let i = 0; i < tentacleCount; i++) {
-            const po = { x: pos.x, y: pos.y, angle: 0, player: this, name: this.name + " Tentacle " + i };
+            const po = { x: pos.x, y: pos.y, angle: 0, agent: this, name: this.name + " Tentacle " + i };
             const color = this.color;
             const t = this.createTentacle(po, tentacleSegmentCount, tentacleSegmentLength, color);
         }
 
         this.tentacleCount = tentacleCount;
-
         this.setRestingPose(pos.x, pos.y);
-
-        console.log("Created Player with " + this.tentacleCount + " tentacles setup: " + this.name);
     }
 
     /**
@@ -53,7 +55,7 @@ class TentaclePlayer extends Player {
         
         if (!pos) pos = { x: this.position.x, y: this.position.y };
 
-        const tentacle = new Tentacle({ player: this, color: color });
+        const tentacle = new Tentacle({ agent: this, color: color });
         const colorCount = TentacleSegment.colors.length;
 
         const tailIndex = segmentCount - 1;
@@ -95,8 +97,6 @@ class TentaclePlayer extends Player {
 
             let dx = (typeof offset === "number") ? offset : this.tentacles[i].totalLength;
             let dy = dx;
-
-            console.warn("Offset: " + dx + " | " + this.tentacles[i].totalLength);
 
             const mod = i % 4;
             switch (mod) { 
@@ -144,7 +144,7 @@ class TentaclePlayer extends Player {
     }
 
     /**
-     * Gets the tentacle that has a tip that is the closest to the last calculated player target position,
+     * Gets the tentacle that has a tip that is the closest to the last calculated agent target position,
      * which is the last tentacle in the array after reSortTentacles() is called.
      * @returns {Tentacle} The tentacle that is closest to the target, which is to say: the tentacle that is sorted last in the array after reSortTentacles() is called
      */
@@ -153,7 +153,7 @@ class TentaclePlayer extends Player {
     }
 
     /**
-     * Gets the tentacle that has a tip that is the farthest from the last calculated player target position,
+     * Gets the tentacle that has a tip that is the farthest from the last calculated agent target position,
      * which is the first tentacle in the array after reSortTentacles() is called.
      * @returns {Tentacle} The tentacle that is farthest from the target, which is to say: the tentacle that is sorted last in the array after reSortTentacles() is called
      */
@@ -197,15 +197,16 @@ class TentaclePlayer extends Player {
 
         // Current speed
         this.updateSpeed(Math.max(this.currentScalarSpeed, 0.00001));
+        if (typeof this.onStop === "function") this.onStop();
     }
 
-    update(index) { 
+    update(index, isAuto = false) { 
         let i = 0;
         const tentacleCount = this.tentacles.length;
         const tentacleForces = createVector(0, 0);
         
         while (i < tentacleCount) {
-            const forces = this.tentacles[i].updatePhysics(i);
+            const forces = this.tentacles[i].updatePhysics(i, isAuto);
             tentacleForces.add(forces);
             i++;
         }
@@ -221,6 +222,7 @@ class TentaclePlayer extends Player {
         }
         
         // TODO: Some Newtonian physics here with tentacleForces
+        let posUpdate = false;
         let hasArrived = false;
 
         if (!!this.target) {
@@ -230,20 +232,24 @@ class TentaclePlayer extends Player {
             const distance = diff.mag();
             const minDist = Math.max(1, this.currentScalarSpeed);
 
+            posUpdate = true;
             hasArrived = (distance <= minDist);
         }
 
         let i = 0;
 
-        // Set the head position of each tentacle to the position of the player' position
+        // Set the head position of each tentacle to the position of the agent' position
         // The rest of the segments will auto configure themselves
         while(i < tentacleCount) {
             this.tentacles[i].updatePositions(i);
             i++;
         }
 
+        if (posUpdate && typeof this.onPositionUpdate === "function")
+            this.onPositionUpdate();
+
         if (hasArrived) { 
-            console.error("Player Arrived");
+            console.error("Agent Arrived");
             this.onArrival();
         }
 
@@ -277,9 +283,13 @@ class TentaclePlayer extends Player {
         return this.currentSpeed;
     }
 
-    drawTargetSymbol() { 
+    drawTarget() { 
         if (!this.target) return false;
         
+        stroke("#FFFFCC08");
+        strokeWeight(16);
+        line(this.position.x, this.position.y, this.target.x, this.target.y);
+
         noFill();
         stroke("#FFFFFF");
         strokeWeight(1);
@@ -289,26 +299,19 @@ class TentaclePlayer extends Player {
         return true;
     }
 
-    draw(index) { 
+    draw(index, selectedSegmentId = null) { 
         const tentacles = this.tentacles;
         const tentacleCount = tentacles.length;
 
         let i = 0;
 
         while (i < tentacleCount) { 
-            tentacles[i].drawTentacle(i);
+            tentacles[i].draw(i);
             i++;
         }
 
-        this.drawTargetSymbol();
-        super.draw();
-
-        if (!!this.target) { 
-            stroke("#FFFFCC08");
-            strokeWeight(16);
-            line(this.position.x, this.position.y, this.target.x, this.target.y);
-        }
-
+        super.draw(index);
+        this.drawTarget();
     }
 
 }
