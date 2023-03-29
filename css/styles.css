@@ -7,12 +7,16 @@
     --link-color: rgb(159, 255, 255);
     --link-hover-color: cyan;
 
+    --button-color: #444;
+    --button-text-color: #DDD;
+    --button-hover-color: #777;
+
     --border-color: #333;
     --border: var(--border-color) 1px solid;
     --selected-color: #FFFFFF88;
 }
 
-body { 
+body {
     margin: 0;
     font-family: Arial, Tahoma;
     background-color: var(--background-color);
@@ -34,13 +38,26 @@ a:hover {
     color: var(--link-hover-color);
 }
 
-h1, h2, h3, h4 { 
-    margin: 0;
-    padding: 0;
+button {
+    cursor: pointer;
+    border-width: 0;
+    border-radius: 8px;
+    padding: 8px 16px;
+    color: var(--button-text-color);
+    background-color: var(--button-color);
 }
 
-h3 { 
-    margin-bottom: 12px;
+button:hover { 
+    background-color: var(--button-hover-color);
+}
+
+h1, h2, h3, h4 { 
+    margin-bottom: 8px;
+    padding: 0 0 8px 0;
+}
+
+.first { 
+    margin-top: 0;
 }
 
 input[type="text"],
@@ -284,7 +301,7 @@ canvas {
 main {
     display: block;
     position: relative;
-    height: calc(100vh - 120px);
+    height: calc(100vh - 160px);
     border-bottom: var(--border);
 }
 
@@ -443,3 +460,4 @@ input[type="range"]::-webkit-slider-thumb {
 #controls>span.control>i:hover { 
     color: var(--link-hover-color);
 }
+

@@ -1,4 +1,14 @@
+/**
+ * @fileoverview Neuro App
+ * @version 1.0.0
+ * @license MIT - Just give me some street cred
+ * 
+ * @description
+ * This class is analogous to the Controller. It handles input (data and events) and passes data to
+ * the underlying network (this.network) and view. It also handles the logic of the app.
+ */
 class NeuroApp extends App { 
+    /** Use singleton pattern to ensure only one instance of the app is created, but more because I'm lazy and want to access the instance from anywhere */
     static instance = new NeuroApp();
 
     static init() {
@@ -12,12 +22,12 @@ class NeuroApp extends App {
 
         this.name = options?.name || "Neuro App";
         this.network = new FeedForwardNueralNetwork(this);
-        this.text = "Neuro App FF";
+        this.text = "Feed-Forward Neural Network";
         this.isAuto = false;
         this.isSetup = false;
         this.selectedNeurons = [];
         this.selectedKeys = {};
-        this.log = [];
+        this.messages = [];
         this.results = [];
 
         if (!document.getElementById(this.elementId)) { 
@@ -34,13 +44,17 @@ class NeuroApp extends App {
         else if (this.addEventListeners > 1) console.warn("No canvas mounted");
     }
 
+    initWithLayerNeuronCounts(...layerNeuronCounts) {
+        const nn = new MatrixNeuroApp(layerNeuronCounts);
+        this.network.initWithMatrixNetwork(nn);
+    }
+
     addEventListeners() {
         const canvas = super.addEventListeners(true);
+        
         if (!canvas || !this.network) return;
 
-        // Handle Key Press
-
-        // Generally add keyboard event handlers
+        // Handle Key Presses and other events
         document.addEventListener("keydown", (e) => {
             const k = e.key.toLowerCase();
             this.selectedKeys[k] = true;
@@ -52,78 +66,73 @@ class NeuroApp extends App {
                     break;
                 case "a":
                 case "keya":
-                    this.network.submit(this.getInputValues(e));
+                    this.network.execute(this.getInputValues(e));
                     break;
                 case "t":
                 case "keyt":
-                    const ts = this.network.trainXor(1000, 0, 0);
+                    const epocCount = 10000;
+                    console.log("Training and testing XOR example x" + epocCount + "...");
 
-                    const lastValue = this.results.length > 0 ? this.results[this.results.length - 1] : null;
-                    const suffix = typeof lastValue === "number" ? ((lastValue - this.error) > 0 ? "Good" : "Bad") : "New";
+                    const nn = NeuroApp.testXor(epocCount, 3);
+                    NeuroApp.instance.network.initWithMatrixNetwork(nn);
 
-                    this.results.push(ts.error);
-                    this.log.push(ts.error.toFixed(6) + " " + suffix);
-                    this.text = "Trained " + ts.epocs + ": " + ts.errors.map((e) => e[0].toFixed(3)).join(", ") + "\n" + this.log.join("\n");
+                    if (typeof this.refreshInputFields === "function") this.refreshInputFields();
+                    else console.error("No refreshInputFields() method found");
+                    
+                    this.text = "";
                     break;
                 case "r":
                 case "keyr":
                     this.randomizeWeights();
-                    this.network.submit(this.getInputValues(e));
+                    this.network.execute(this.getInputValues(e));
                     break;
             }
         });
 
         document.addEventListener("keyup", (e) => {
             const k = e.key.toLowerCase();
-            delete this.selectedKeys[k];
+            delete this.selectedKeys[k];    // Keep track of keyup events for mult-select and other things
         });
 
-        console.log("Added event listeners? " + (canvas !== null).toString());
+        console.log("Added event listeners: " + (canvas !== null).toString());
 
         return canvas;
     }
 
-    setup(...args) {
-        if (this.needsEventListeners) { 
+    init(...args) {
+        if (this.needsEventListeners) {
             if (!this.addEventListeners()) { 
-                console.error("Failed to setup event listeners. Aborting.");
+                console.error("Failed to setup event listeners. Aborting setup.");
                 return;
             }
         }
 
-        let layerCount = 0;
         let layers = [];
 
-        while (true) {
-            const neuronCount = parseInt(args[layerCount.toString()]);
-            if (!(layerCount > 0)) break;
-
-            const options = { index: layerCount, neuronCount: neuronCount };
-            const layer = new NeuronLayer(this.network, options);
-
-            layers.push(layer);
-            layerCount++;
-
-            if (layerCount > 9999) break;
+        if (!!args[0] && args[0] instanceof MatrixNeuroApp) {
+            const nn = args[0];
+            this.network.initWithMatrixNetwork(nn);
         }
 
-        if (layers.length <= 1) {
+        // If no layers were added, add default layers
+        if (this.network.layers.length <= 1) {
             console.log("Setting up default layered network");
 
             layers = [
                 new NeuronLayer(this.network, { name: "Input Layer", neuronCount: 3, biasCount: 1 }),
                 new NeuronLayer(this.network, { name: "Hidden Layer 1",  neuronCount: 5, biasCount: 1 }),
                 new NeuronLayer(this.network, { name: "Hidden Layer 2",  neuronCount: 7, biasCount: 1 }),
-                new NeuronLayer(this.network, { name: "Hidden Layer 1",  neuronCount: 5, biasCount: 1 }),
-                new NeuronLayer(this.network, { name: "Hidden Layer 1",  neuronCount: 5, biasCount: 1 }),
+                new NeuronLayer(this.network, { name: "Hidden Layer 3",  neuronCount: 5, biasCount: 1 }),
                 new NeuronLayer(this.network, { name: "Output Layer",  neuronCount: 1 }),
             ];
+
+            this.network.appendLayers(layers);
+            this.network.connect();
         }
 
-        this.network.appendLayers(layers);
-        this.network.connect();
         this.isSetup = true;
 
+        // If the first arg is a function, use it as the getInputValues() method which is the mechanism for feeding input into the network
         if (args.length > 0 && typeof args[0] === "function")
             this.getInputValues = (sender) => args[0];
 
@@ -153,25 +162,55 @@ class NeuroApp extends App {
         }
     }
 
-    clearSelectedNeurons() { 
+    clearSelectedNeurons() {
         this.selectedNeurons = [];
         this.network.layers.map((layer) => {
             layer.neurons.map(n => n.isSelected = false);
         });
     }
 
-    draw() { 
-        super.refreshCanvas();
-
-        let i = 0;
+    draw() {
         const network = this.network;
         if (!network) return;
 
-        const layerCount = network.layerCount;
+        this.network.updatePositions();
+        super.refreshCanvas();
+        this.network.draw();
+    }
 
-        while (i < layerCount) { 
-            network.layers[i].draw();
-            i++;
+    static testXor(epocs = 1000, testCount = 1, learningRate = 0.1) {
+        // Setup
+        let training_data = [
+            {
+                inputs: [0, 0],
+                outputs: [0]
+            },
+            {
+                inputs: [0, 1],
+                outputs: [1]
+            },
+            {
+                inputs: [1, 0],
+                outputs: [1]
+            },
+            {
+                inputs: [1, 1],
+                outputs: [0]
+            }
+        ];
+
+        const nn = new MatrixNeuroApp(2, 8, 4, 1);
+        nn.setLearningRate(learningRate);
+        
+        for (let tc = 0; tc < testCount; tc++) {
+            // Train
+            for (let i = 0; i < epocs; i++) {
+                const data = random(training_data);
+                nn.train(data.inputs, data.outputs);
+            }
         }
+
+
+        return nn;
     }
 }

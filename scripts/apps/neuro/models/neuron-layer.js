@@ -21,7 +21,6 @@ class NeuronLayer {
             if (this.index === 0) this.biasCount = 0;
             else this.biasCount = 1;
         }
-        console.warn("Bias Count for " + this.name + "[" + this.index + "]: " + this.biasCount);
 
         if (options.neuronCount > 0) { 
             const biasIndex = options.neuronCount - (this.biasCount);
@@ -38,7 +37,6 @@ class NeuronLayer {
         }
         
         this.neuronCount = this.neurons.length;
-        console.log(this.name + " created with " + this.neuronCount + " neurons");
     }
 
     getNextLayer() { 
@@ -62,61 +60,13 @@ class NeuronLayer {
     /**
      * Connects the neurons in this layer to the neurons in the next layer
      */
-    connect() { 
+    connect(initialWeightValue = null) { 
         const nextLayer = this.getNextLayer();
         const prevLayer = this.getPreviousLayer();
 
         for (let i = 0; i < this.neurons.length; i++) {
             const n = this.neurons[i];
-            n.connect(nextLayer, prevLayer);
-        }
-    }
-
-    /**
-     * Make sure the neuron deltas have already been set
-     */
-    backPropagate() { 
-        const neruonCount = this.neuronCount;
-
-        for (let i = 0; i < neruonCount; i++) {
-            this.neurons[i].backPropagate();
-        }
-    }
-
-    calculateGradients() { 
-        const neruonCount = this.neuronCount;
-
-        if (this.index === 0) {
-            // Input layer; so we just calc err x inputvalue
-            for (let i = 0; i < neruonCount; i++) {
-                const n = this.neurons[i];
-                const flen = n.forwardConnectors.length;
-
-                for (let j = 0; j < flen; j++) {
-                    const connector = n.forwardConnectors[j];
-                    connector.weightDerivative += n.error * n.value;
-                }
-
-                n.thresholdDerivative += n.error;
-            }
-
-            return;
-        }
-        
-        for (let i = 0; i < neruonCount; i++) {
-            this.neurons[i].calculateGradient();
-        }
-    }
-
-    /**
-     * Make sure the neuron deltas have already been set
-     * @param {number} learningRate - The learning rate to use for backpropagation
-     */
-    updateWeights(learningRate, momentum = 0.1) { 
-        const neruonCount = this.neuronCount;
-
-        for (let i = 0; i < neruonCount; i++) {
-            this.neurons[i].updateWeights(learningRate, momentum);
+            n.connect(nextLayer, prevLayer, initialWeightValue);
         }
     }
 
@@ -130,8 +80,7 @@ class NeuronLayer {
      */
     activate() {
         for (let i = 0; i < this.neuronCount; i++) {
-            const n = this.neurons[i];
-            n.activate();
+            this.neurons[i].activate();
         }
     }
     
@@ -151,12 +100,13 @@ class NeuronLayer {
     /**
      * Sets the positions of each neuron in the layer
      */
-    setLayout(layerWidth = -1) { 
+    setLayout(layerWidth = -1, layerHeight = -1) { 
         const app = this.network.app;
         if (layerWidth <= 0) layerWidth = Math.floor(app.width / this.network.layers.length);
-
-        const containerWidth = Math.floor(app.width / this.network.layerCount);
-        const containerHeight = Math.floor(app.height / this.neuronCount);
+            
+        const totalHeight = (layerHeight > 0 ? layerHeight : app.height);
+        const containerWidth = layerWidth; // Math.floor(app.width / this.network.layerCount);
+        const containerHeight = Math.floor(totalHeight / this.neuronCount);
         
         for (let i = 0; i < this.neurons.length; i++) { 
             const n = this.neurons[i];
@@ -170,17 +120,26 @@ class NeuronLayer {
     }
 
     /**
-     * Everything below here is for p5
+     * Everything below here is for p5 or visual updatez
      */
+    updatePositions() { 
+        let i;
+        const neuronCount = this.neurons.length;
 
+        for (i = 0; i < neuronCount; i++) {
+            this.neurons[i].updatePosition();
+        }
+    }
 
     /**
      * Draws the neurons in this layer
      */
     draw() {
         //console.log("Drawing Layer: " + this.name);
+        const parentPos = this.network.position;
+
         for(let i = 0; i < this.neuronCount; i++) { 
-            this.neurons[i].draw(i);
+            this.neurons[i].draw(parentPos);
         }
     }
 }

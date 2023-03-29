@@ -5,6 +5,9 @@ class Agent {
         this.id = options.id || (Math.random() * 9999999999).toString(36);
         this.name = options.name || "Agent";
         this.color = options.color || "#000000";
+        this.baseColor = this.color + "";
+
+        this.colorQueue = [];
         this.backgroundColor = options.backgroundColor || null;
         this.outlineColor = options.outlineColor || "#FFFFFF33";
         this.position = createVector(options.x || 0, options.y || 0);
@@ -29,6 +32,23 @@ class Agent {
 
             ellipse(x, y, w, h);
         };
+    }
+
+    pushColor(color) { 
+        if (typeof color !== "string" || !color)
+            throw new Error("Invalid color: " + color);
+        
+        this.colorQueue.push(color);
+    }
+
+    flipColor() { 
+        if (this.colorQueue.length > 0) {
+            this.color = this.colorQueue.shift();
+            return true;
+        }
+
+        this.color = this.baseColor;
+        return false;
     }
 
     draw(index) {

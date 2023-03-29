@@ -1,6 +1,6 @@
-# JavaScript Particle (Life) Engine
+# JavaScript Emergence Engine
 
-## Particle Life
+# Particle Life
 
 JavaScript implementation of Particle Life implementation, using the p5.js library
 https://p5js.org/
@@ -45,3 +45,11 @@ Upcoming Features:
 9. Save/Load Configs
 10. Camera view to pan L/R/U/D
 11. Fixed particles (so moving particles can bounce off/collidet/black-hole/etc)
+
+# Neural Network (neuro.html)
+
+Still incomplete - No description yet
+
+# Tentacle Physics (tentacles.html)
+
+Still incomplete - No description yet

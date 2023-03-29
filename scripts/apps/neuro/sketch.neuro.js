@@ -23,9 +23,7 @@ function setup() {
 
 function handleRightClick(mouseX, mouseY) {
     const app = NeuroApp.instance;
-
     if (!app.isSetup) app.setup();
-    //
 }
 
 function handleLeftClick(mouseX, mouseY) {
@@ -33,11 +31,15 @@ function handleLeftClick(mouseX, mouseY) {
     const n = app.getNeuronAt(mouseX, mouseY);
 
     if (!!n) {
-        if (!(app.selectedKeys["capslock"] || app.selectedKeys["shift"]))
+        const isMultipleSelection = app.selectedKeys["capslock"] || app.selectedKeys["shift"];
+        
+        if (!isMultipleSelection)
             app.clearSelectedNeurons();
 
         if (n.select()) {
             app.selectedNeurons.push(n);
+            const runnerTarget = app.network.outputLayer.neurons[0];
+            app.network.createRunner(n, runnerTarget, 15);
         } else {
             const idx = app.selectedNeurons.indexOf(n);
             if (idx >= 0) app.selectedNeurons.splice(idx, 1);
@@ -47,10 +49,9 @@ function handleLeftClick(mouseX, mouseY) {
     }
 
     app.clearSelectedNeurons();
-
 }
 
-function mouseEvent(button, mx, my) {
+function mouseEvent(button) {
     const app = NeuroApp.instance;
 
     app.button = button;

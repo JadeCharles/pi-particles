@@ -32,10 +32,10 @@ class App {
     addEventListeners(suppressContextMenu = true) { 
         const canvas = document?.querySelector("canvas");
 
-        if (!canvas) { 
+        if (!canvas) {
             if (this.needsEventListeners > 1)
                 console.warn("No canvas to add event listener to (returning null)");
-            
+
             this.needsEventListeners++;
             return null;
         }
@@ -101,7 +101,7 @@ class App {
      */
     updateCanvasSize(elementId) {
         if (typeof elementId !== "string" || elementId.length === 0)
-        elementId = this.elementId;
+            elementId = this.elementId;
 
         const canvas = document.getElementById(elementId);
 

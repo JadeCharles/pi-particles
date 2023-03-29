@@ -1,9 +1,3 @@
-/**
- * Notes:
- *      weightsDerivatives, layerWeightsDerivatives[n] = Connector.weightDerivative
- *      weightsPreviousDerivatives[n] = Connector.prevWeightDerivative
- *      weightsUpdates[n] = Connector.weightDelta
-*/
 class NeuronConnector {
     constructor(source, dest, ...args) { 
         if (!source) throw new Error("NeuronConnector must have a source neuron");
@@ -16,10 +10,11 @@ class NeuronConnector {
         this.label = null;
 
         const options = args?.length > 0 ? args[0] : {};
+      
         this.weight = typeof options === "number" ? options : options.weight;
         this.weightDelta = 0.0;
-        this.weightDerivative = 0.0;    // The sum of the dest neuron errors * previous neuron's value
-        this.prevWeightDerivative = 0.0;
+        this.rawValue = 0.0;
+        this.contributionPercent = 0.0;
 
         this.color = args?.length > 1 ? args[1] : (options.color || "#FFFFFF55");
         this.colorWeight = 0;
@@ -38,10 +33,12 @@ class NeuronConnector {
         if (typeof this.weight !== "number") throw new Error("NeuronConnector must have a value");
 
         this.label = label;
-        const activatedValue = this.source.value * this.weight;
-        this.colorWeight = activatedValue;
+        const v = this.source.value * this.weight;
 
-        return activatedValue;
+        this.rawValue = v;
+        this.colorWeight = v;
+
+        return v;
     }
 
     /**
@@ -57,14 +54,12 @@ class NeuronConnector {
         strokeWeight(1);
 
         const isSelected = this.source.isSelected || this.dest.isSelected;
+        const alpha = (this.weight + Neuron.maxWeightValue) / (Neuron.maxWeightValue * 2);
+        const connectorColor = isSelected ?
+            "rgba(255, 255, 0, " + alpha.toFixed(2) + ")" :
+            "rgba(255, 255, 255, " + alpha.toFixed(2) + ")";
 
-        const c = (this.weight + Neuron.maxWeightValue) / (Neuron.maxWeightValue * 2);
-        if (isSelected) {
-            stroke("rgba(255, 255, 0, " + c.toFixed(2) + ")");
-        } else { 
-            stroke("rgba(255, 255, 255, " + c.toFixed(2) + ")");
-        }
-
+        stroke(connectorColor);
         line(p1.x, p1.y, p2.x, p2.y);
 
         const m = p5.Vector.sub(p2, p1).mult(0.2);
@@ -72,7 +67,7 @@ class NeuronConnector {
 
         noFill();
         textAlign(CENTER, CENTER);
-        text(this.weight.toFixed(3), p3.x, p3.y);
+        text(this.weight?.toFixed(3) || "Null", p3.x, p3.y);
     
         if (!!this.label) {
             text(this.label, p3.x, p3.y + 20);

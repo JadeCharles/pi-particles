@@ -1,33 +1,49 @@
-class ActivationFunction { 
-    constructor(name, activationFunction, derivativeFunction, partialDerivativeFunction) {
+class ActivationFunction {
+    constructor(squashingFunction, derivativeFunction, name = "No Name") {
         this.name = name;
-        this.activate = activationFunction;
-        this.getDerivative = derivativeFunction;
-        this.getPartialDerivative = partialDerivativeFunction;
+        this.squash = squashingFunction;
+        this.getPartialDerivative = derivativeFunction;
     }
-
-    static sigmoid = new ActivationFunction("Sigmoid", (x) => 1 / (1 + Math.exp(-x)), (x) => x * (1 - x), (x) => x * (1 - x));
     
-    static tanh = new ActivationFunction("Tanh", (x) => Math.tanh(x), (x) => 1 - (x * x), (x) => 1 - (x * x));
+    static fromName(name) {
+        if (typeof name !== "string" || !name)
+            throw new Error("Invalid name passed to ActivationFunction.fromName: " + name);
 
-    static relu = new ActivationFunction("ReLU", (x) => Math.max(0, x), (x) => x > 0 ? 1 : 0, (x) => x > 0 ? 1 : 0);
-
-    static softmax = new ActivationFunction("Softmax", (xs) => ActivationFunction.softmax(xs), (xs) => ActivationFunction.softmax(xs), (xs) => ActivationFunction.softmax(xs));
-
-    static getActivationFunctionByName(name) {
-        switch (name) {
-            case "Sigmoid":
-                return ActivationFunction.sigmoid;
-            case "Tanh":
-                return ActivationFunction.tanh;
-            case "ReLU":
-                return ActivationFunction.relu;
-            case "Softmax":
-                return ActivationFunction.softmax;
-            default:
-                return ActivationFunction.sigmoid;
+        switch (name) { 
+            case "Sigmoid": return ActivationFunction.sigmoidActivationFunction;
+            case "ReLU": return ActivationFunction.reLUActivationFunction;
+            case "HyperTan": return ActivationFunction.hyperTanActivationFunction;
+            default: 
+                console.error("Unknown activation function name: " + name);
+                return null;
         }
     }
 
+    static sigmoid(x) { 
+        return 1 / (1 + Math.exp(-x))
+    }
 
+    static sigmoidPrime(y) { 
+        return y * (1 - y);
+    }
+
+    static hyperTan(x) { 
+        return Math.tanh(x);
+    }
+
+    static hyperTanPrime(y) { 
+        return 1 - (y * y);
+    }
+
+    static rectifyLinear(x) { 
+        return Math.max(0, x)
+    }
+
+    static rectifyLinearPrime(y) { 
+        return y > 0 ? 1 : 0;
+    }
+
+    static sigmoidActivationFunction = new ActivationFunction(ActivationFunction.sigmoid, ActivationFunction.sigmoidPrime, "Sigmoid");
+    static reLUActivationFunction = new ActivationFunction(ActivationFunction.rectifyLinear, ActivationFunction.rectifyLinearPrime, "ReLU");
+    static hyperTanActivationFunction = new ActivationFunction(ActivationFunction.hyperTan , ActivationFunction.hyperTanPrime, "HyperTan");
 }

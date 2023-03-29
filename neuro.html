@@ -3,7 +3,9 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Neuro Life</title>
+    <title>Neuro Networks</title>
+
+    <!-- The script includes need to be in this specific order -->
     <script src="scripts/infrastructure/jquery-3.6.3.min.js"></script>
     <script src="scripts/infrastructure/p5.js"></script>
     <script src="scripts/apps/app.js"></script>
@@ -14,13 +16,15 @@
     <script src="scripts/apps/tentacles/tentacle.js"></script>
     <script src="scripts/apps/tentacles/tentacle-agent.js"></script>
 
+    <script src="scripts/apps/neuro/models/neuro-matrix.js"></script>
     <script src="scripts/apps/neuro/models/activation-function.js"></script>
-    <script src="scripts/apps/neuro/models/training-set.js"></script>
+    <script src="scripts/apps/neuro/app.matrix-neuro.js"></script>
     <script src="scripts/apps/neuro/models/neuron.js"></script>
     <script src="scripts/apps/neuro/models/neuron-connector.js"></script>
     <script src="scripts/apps/neuro/models/neuron-layer.js"></script>
 
-    <script src="scripts/apps/neuro/feed-forward.js"></script>
+    <script src="scripts/apps/neuro/networks/feed-forward.js"></script>
+    <script src="scripts/apps/neuro/models/neuron-runner.js"></script>
     <script src="scripts/apps/neuro/app.neuro.js"></script>
     <script src="scripts/apps/neuro/sketch.neuro.js"></script>
 
@@ -43,34 +47,13 @@
             <h1 id="particle-life-header">
                 <span>Neuro - Neural Network</span>
 
-                <span class="menu-item" id="menu-item-legend">
-                    <span class="title" id="legend">
-                        <label class="shown"><i class="fa-sharp fa-regular fa-caret-down"></i></label>
-                        <label class="not-shown"><i class="fa-sharp fa-regular fa-caret-right"></i></label>
-                        <label>Actions</label>
-                    </span>
-                    <span class="panel" id="legend-panel">
-                        <span class="content">
-                            <span class="stack footer keys">
-                                <h3>Input Values</h3>
-                                <ul id="input-layer-values">
-                                    <li>
-                                        <span><input checked type="checkbox" id="train-flag" /></span>
-                                        <span>Use as Training</span>
-                                    </li>
-                                </ul>
-                                <span><button id="input-value-button">Go</button></span>
-                            </span>
-                        </span>
-                    </span>
-                </span>
-
                 <span class="menu-item" id="menu-item-settings">
                     <span class="title" id="settings">
                         <label class="shown"><i class="fa-sharp fa-regular fa-caret-down"></i></label>
                         <label class="not-shown"><i class="fa-sharp fa-regular fa-caret-right"></i></label>
-                        <label>Model</label>
+                        <label>Model Setup</label>
                     </span>
+
                     <span class="panel" id="settings-panel">
                         <span class="content">
                             <ul>
@@ -89,7 +72,7 @@
                                         <span><input type="range" min="0" max="16" value="2" step="1" onchange="onRangeChange(this, 'setSpeed')" oninput="onRangeViewChange(this, 'hidden-layer-count')" class="slider" id="hidden-layer-count-value" /></span>
                                     </span>
                                 </li>
-
+                
                                 <li>
                                     <span class="stack">
                                         <strong>Output Labels: <strong id="output-count">2</strong></strong>
@@ -97,14 +80,40 @@
                                         <span><input type="range" min="2" max="2400.0" value="2" onchange="onRangeChange(this, 'setOutputCount')" oninput="onRangeViewChange(this, 'output-count')" class="slider" id="output-count-value" /></span>
                                     </span>
                                 </li>
-
+                
                             </ul>
                         </span>
                     </span>
                 </span>
 
-                <span id="colors"></span>
-                <span id="controls"></span>
+                <span class="menu-item" id="menu-item-legend">
+                    <span class="title" id="legend">
+                        <label class="shown"><i class="fa-sharp fa-regular fa-caret-down"></i></label>
+                        <label class="not-shown"><i class="fa-sharp fa-regular fa-caret-right"></i></label>
+                        <label>I/O</label>
+                    </span>
+                    <span class="panel" id="legend-panel">
+                        <span class="content">
+                            <span class="stack footer keys">
+                                <h3 class="first">Input Values</h3>
+                                <ul id="input-layer-values">
+                                    <li>
+                                        <span><input checked type="checkbox" id="train-flag" /></span>
+                                        <span>Use as Training</span>
+                                    </li>
+                                </ul>
+                                <span><button id="input-value-button">Go</button></span>
+
+                                <h3>Import/Export</h3>
+                                <ul>
+                                    <li><span>Import Json Weights</span></li>
+                                    <li><span>Export Json Weights</span></li>
+                                </ul>
+                            </span>
+                        </span>
+                    </span>
+                </span>
+
             </h1>
 
             <nav>
@@ -133,70 +142,47 @@
     <script src="scripts/apps/structures/game-grid.js"></script>
 
     <script>
-        /**
-        * This is all the form event handlers and value setters
-        */
+        // ------ This is all the form event handlers and value setters */
 
-//        const href = "https://portal.cardsync.io/";
-//        //const href = "https://stage.portal.cardsync.io";
-//        const pattern = "http(s)*://(dev|staging|stage|sandbox|api|prod){0,1}(\\.){0,1}portal\\.(paylani\\.com|cardsync\\.io)+"; 
-//        const matches = href.match(pattern);
-//        const matchCount = matches?.length || 0;
-//        console.warn(href);
-//        console.warn(JSON.stringify(matches, null, 4));
-
+        /** NeuroApp init */
         NeuroApp.init();
 
-        $(document).ready(() => { 
-            console.warn("Ready.");
-            
-            const button = $("#input-value-button");
-            button.off();
-            button.click((ev) => { 
-                const isTraining = $('#train-flag').is(":checked");
-                const inputs = getInputsFromForm();
+        window.onresize = function () {
+            const app = NeuroApp.instance;
+            if (!app) return;
 
-                if (isTraining) {
-                    const expectedValue = trainSingle(inputs);
-                    const resultNeuron = NeuroApp.instance.network.outputLayer.neurons[0];
-                    console.log("Training: " + inputs + " => (Expected: " + expectedValue + ") => " + resultNeuron.value.toFixed(2));
-                } else { 
-                    console.log("Submit: " + inputs);
-                }
-            });
-
-            setTimeout(() => { 
-                NeuroApp.instance.setup();
-                refreshInputFields();
-                NeuroApp.instance.getInputValues = getInputsFromForm;
-            }, 10);
-        });
-
-        function trainSingle(inputs) { 
-            const expectedValue = inputs[0] === inputs[1] ? 0 : 1;
-
-            let trainingSet = new TrainingSet();
-            let index = 0;
-
-            // Get/set index, given the inputs
-            TrainingSet.xorInputs.map((ip, i) => {
-                if (ip[0] === inputs[0] && ip[1] === inputs[1])
-                    index = i;
-            });
-
-            trainingSet.trainIndex(NeuroApp.instance.network, index, 0);
-            
-            NeuroApp.instance.text = "Inputs: [" + inputs.join(", ") + "]\n" +
-                "Expected: " + trainingSet.expectedOutputList[index][0].toFixed(2) + "\n" +
-                "Actual  : " + NeuroApp.instance.network.outputLayer.neurons[0].value.toFixed(2) + "\n" +
-                "SumSq Err: " + trainingSet.networkError.toFixed(6) + "\n" + 
-                "";
-
-            return expectedValue;
+            app.updateCanvasSize();
+            app.network.refreshLayout();
         }
 
+        /** JQuery init */
+        $(document).ready(() => { 
+            console.warn("Jquery Initted and Ready.");
+
+            const button = $("#input-value-button");
+
+            button.off();   // In case it was already bound
+            button.click((ev) => { 
+                const inputs = getInputsFromForm();
+                testNetworkWithInputs(inputs);
+            });
+
+            // Lazy way to wait for the UI to really be ready
+            setTimeout(() => { 
+                if (!NeuroApp.instance.addEventListeners())
+                    console.warn("No event listeners added.");
+
+                NeuroApp.instance.getInputValues = getInputsFromForm;
+            }, 750);
+        });
+
+        /** Create HTML form fields for each of the input neurons */
         function refreshInputFields(minValue = 0, maxValue = 1.0, step = 1) {
             const elementList = $('#input-layer-values');
+            if (!NeuroApp.instance.network?.inputLayer) { 
+                console.warn("No network available. Set one up first");
+                return elementList;
+            }
 
             const inputNeurons = NeuroApp.instance.network.inputLayer.neurons.filter((n) => !n.isBias).map((n, index) => {
                 const elementId = 'input_param_' + index.toString();
@@ -210,7 +196,42 @@
             return elementList;
         }
 
-        function getInputsFromForm(sender) { 
+        function testNetworkWithInputs(inputs) {
+            if (!!NeuroApp.instance.network.matrixNetwork) {
+                const nnResult = NeuroApp.instance.network.executeMatrix(inputs);
+                console.log("Matrix Results:");
+                console.table(nnResult);
+            }
+
+            const piResult = NeuroApp.instance.network.execute(inputs);
+            console.log("Pi Results:");
+            console.table(piResult);
+        }
+
+        function onRangeChange(e) { 
+            const input = $(e);
+            const value = input.val();
+            const id = input.attr('id');
+
+            console.log("RangeId: " + id + ", Value: " + value);
+
+            refreshInputFields();            
+        }
+
+        function onRangeViewChange(e) {
+            const input = $(e);
+            const value = input.val();
+            const id = input.attr('id');
+
+            NeuroApp.instance.network.initWithMatrixNetwork(nn);
+
+        }
+
+        if (!NeuroApp.instance.refreshInputFields)
+            NeuroApp.instance.refreshInputFields = refreshInputFields;
+
+        /** Get inputs from fields and convert them to an array */
+        function getInputsFromForm(sender) {
             let inputs = [];
             let i = 0;
 
@@ -224,7 +245,6 @@
                         const message = "Bad value: " + element.val();
                         alert(message);
                         throw new Error(message);
-                        return;
                     }
 
                     inputs.push(value);
