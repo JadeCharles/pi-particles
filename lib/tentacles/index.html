@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Tentacle Life</title>
+    <script src="../common/jquery-3.6.3.min.js"></script>
+    <script src="../common/p5.js"></script>
+    <script src="../common/app.js"></script>
+    <script src="../common/agent.js"></script>
+    <script src="components/tentacle-tip.js"></script>
+    <script src="components/tentacle-segment.js"></script>
+    <script src="components/tentacle.js"></script>
+    <script src="components/tentacle-agent.js"></script>
+    <script src="apps/app.tentacles.js"></script>
+    <script src="apps/sketch.tentacles.js"></script>
+
+    <link href="../../css/fontawesome/css/fontawesome.min.css" rel="stylesheet">
+    <link href="../../css/fontawesome/css/brands.min.css" rel="stylesheet">
+    <link href="../../css/fontawesome/css/solid.min.css" rel="stylesheet">
+
+    <link href="../../css/styles.css" type="text/css" rel="stylesheet" />
+</head>
+
+<body id="tentacles">
+    <header>
+        <div>
+            <div id="ui-container" style="display:none;">
+                <div id="ui-legend">
+
+                </div>
+            </div>
+
+            <h1>
+                <span class="page-title">Tentacles - Inverse Kinematics</span>
+
+                <span class="menu-item" id="menu-item-legend">
+                    <span class="title" id="legend">
+                        <label class="shown"><i class="fa-sharp fa-regular fa-caret-down"></i></label>
+                        <label class="not-shown"><i class="fa-sharp fa-regular fa-caret-right"></i></label>
+                        <label>Legend</label>
+                    </span>
+                    <span class="panel" id="legend-panel">
+                        <span class="content">
+                            <span class="stack header">
+                                <strong>Color Count: <strong id="color-count">4</strong></strong>
+                                <p>The number of <u>diffirent</u> colors. Max is 8.</p>
+                                <span><input type="range" min="1" max="8" value="4" onchange="onRangeChange(this, 'setColorCount')" oninput="onRangeViewChange(this, 'color-count')" class="slider" id="color-count-value" /></span>
+                            </span>
+                            <span id="color-matrix"></span>
+
+                            <span class="stack footer keys">
+                                <h3>Shortcut Keys:</h3>
+                                <ul>
+                                    <li>R - Randomize Attractions <span>Random attraction values</span></li>
+                                    <li>I - Invert Attractions <span>Reverse negative/positive values</span></li>
+                                    <li>U - Uniform Attractions <span>Set all values to 1.0</span></li>
+                                    <li>D - Digitize Matrix <span>Attractions are randomly 1.0 or -1.0 only</span></li>
+                                    <li>Z - Zero Values <span>Attractions all 0.0</span></li>
+                                    <li>Esc - Reset <span>Clear all particles</span></li>
+                                </ul>
+                            </span>
+                        </span>
+                    </span>
+                </span>
+
+                <span class="menu-item" id="menu-item-settings">
+                    <span class="title" id="settings">
+                        <label class="shown"><i class="fa-sharp fa-regular fa-caret-down"></i></label>
+                        <label class="not-shown"><i class="fa-sharp fa-regular fa-caret-right"></i></label>
+                        <label>Settings</label>
+                    </span>
+                    <span class="panel" id="settings-panel">
+                        <span class="content">
+                            <ul>
+                                <li>
+                                    <span class="stack">
+                                        <strong>Speed: <strong id="speed-amount">0.0</strong></strong>
+                                        <p>Multiplier of the speed of the particles. 0=Frozen, 1=Normal Sped, 2=Double Speed</p>
+                                        <span><input type="range" min="0" max="3.0" value="1.0" step="0.1" onchange="onRangeChange(this, 'setSpeed')" oninput="onRangeViewChange(this, 'speed-amount')" class="slider"
+                                                id="speed-amount-value" /></span>
+                                    </span>
+                                </li>
+
+                            </ul>
+                        </span>
+                    </span>
+                </span>
+
+                <span id="colors"></span>
+                <span id="controls"></span>
+            </h1>
+
+            <nav>
+                <ul>
+                    <li><a href="https://www.jadecharles.com/" target="_jade"><i class="fa-solid fa-user"></i> JadeCharles.com</a></li>
+                    <li><a href="https://www.penumbralabs.io" target="_pi"><i class="fa-solid fa-flask"></i> PenumbraLabs.io</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main-canvas"></main>
+
+    <footer>
+        <p id="footer">
+            <span id="main-menu"></span>
+            <span id="main-version">v1.0.0</span>
+        </p>
+    </footer>
+
+    <script src="../common/ui/ui.js"></script>
+    <script src="../common/ui/animation-controls.js"></script>
+    <script src="../common/components/game-grid.js"></script>
+
+    <script>
+        App.initMainMenu({ neuro: true });
+
+        /**
+        * This is all the form event handlers and value setters
+        */
+
+        TentacleApp.init();
+
+        $(document).ready(function () {
+            setTimeout(() => { 
+                const options = { x: 600, y: 400, color: "green", name: "Jade", tentacleCount: 1, tentacleSegmentLength: 128, tentacleSegmentCount: 4 };
+                TentacleApp.instance.createAgent(options);
+            }, 1000);
+            
+        });
+
+        // Options for the app. See /lib/apps/particles/app.particle-life.js       
+        appOptions = { colorCount: 3, ui: new Ui() };
+
+        window.onresize = function () {
+            setup();
+        }
+
+        // Update ui stuff
+        function onRangeViewChange(input, viewId) {
+            if (!input) return;
+
+            const element = document.getElementById(viewId || "");
+            if (!!element) element.innerHTML = input.value;
+        }
+
+        // Feed values into the app methods stuff
+        function onRangeChange(input, func) {
+            if (!input) {
+                console.warn("onRangeChange: input is invalid");
+                return;
+            }
+
+            if (typeof func !== "string") {
+                console.warn("onRangeChange: func is not a string");
+                return;
+            }
+
+            if (typeof app[func] !== "function") {
+                console.error("onRangeChange: app." + func + " is not a function");
+                return;
+            }
+
+            app[func](input.value);
+        }
+
+        TentacleApp.instance.createAgent();
+
+    </script>
+</body>
+
+</html>

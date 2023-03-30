@@ -60,6 +60,26 @@ h1, h2, h3, h4 {
     margin-top: 0;
 }
 
+h1 > span.page-title { 
+    padding-left: 56px;
+    background-repeat: no-repeat;
+    background-position: left center;
+    background-size: 42px;
+    margin-left: 12px;
+}
+
+#neuro h1>span.page-title { 
+    background-image: url("/images/neuro128x128.png");
+}
+
+#tentacles h1>span.page-title {
+    background-image: url("/images/tentacles128x128.png");
+}
+
+#particles h1>span.page-title {
+    background-image: url("/images/particles128x128.png");
+}
+
 input[type="text"],
 input[type="number"],
 input[type="email"],
@@ -301,8 +321,27 @@ canvas {
 main {
     display: block;
     position: relative;
-    height: calc(100vh - 160px);
+    height: calc(100vh - 220px);
     border-bottom: var(--border);
+}
+
+#footer { 
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    align-content: center;
+}
+
+#main-menu { 
+    display: flex;
+    gap: 12px;
+}
+
+#main-menu > a { 
+    margin: 12px 0;
+    padding: 8px 16px;
+    background-color: #FFFFFF11;
+    border-radius: 6px;
 }
 
 header nav ul > li { 

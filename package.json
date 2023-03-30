@@ -1,0 +1,23 @@
+{
+  "name": "pi-emergence",
+  "version": "1.0.0",
+  "description": "Various emergent phenomena",
+  "main": "index.html",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "pi-particles"
+  },
+  "keywords": [
+    "neural-network",
+    "particles",
+    "particle-life",
+    "ai",
+    "machine-learning",
+    "emergent"
+  ],
+  "author": "Jade Charles",
+  "license": "ISC"
+}
