@@ -9,6 +9,18 @@ Object.defineProperty(exports, "ActivationFunction", {
     return _activationFunction["default"];
   }
 });
+Object.defineProperty(exports, "Agent", {
+  enumerable: true,
+  get: function get() {
+    return _agent["default"];
+  }
+});
+Object.defineProperty(exports, "App", {
+  enumerable: true,
+  get: function get() {
+    return _app["default"];
+  }
+});
 Object.defineProperty(exports, "MatrixNeuroApp", {
   enumerable: true,
   get: function get() {
@@ -57,6 +69,24 @@ Object.defineProperty(exports, "P5NeuroDrawer", {
     return _p5NeuroDrawer["default"];
   }
 });
+Object.defineProperty(exports, "P5Ui", {
+  enumerable: true,
+  get: function get() {
+    return _p5Ui["default"];
+  }
+});
+Object.defineProperty(exports, "Ui", {
+  enumerable: true,
+  get: function get() {
+    return _ui["default"];
+  }
+});
+Object.defineProperty(exports, "VectorHandler", {
+  enumerable: true,
+  get: function get() {
+    return _vectorHandler["default"];
+  }
+});
 var _appVisualNeuro = _interopRequireDefault(require("./apps/app.visual-neuro.js"));
 var _appMatrixNeuro = _interopRequireDefault(require("./apps/app.matrix-neuro.js"));
 var _activationFunction = _interopRequireDefault(require("./components/activation-function.js"));
@@ -66,4 +96,9 @@ var _neuronMatrix = _interopRequireDefault(require("./components/neuron-matrix.j
 var _neuronRunner = _interopRequireDefault(require("./components/neuron-runner.js"));
 var _neuron = _interopRequireDefault(require("./components/neuron.js"));
 var _p5NeuroDrawer = _interopRequireDefault(require("./p5-neuro-drawer.js"));
+var _app = _interopRequireDefault(require("../common/app.js"));
+var _agent = _interopRequireDefault(require("../common/agent.js"));
+var _p5Ui = _interopRequireDefault(require("../common/ui/p5.ui.js"));
+var _ui = _interopRequireDefault(require("../common/ui/ui.js"));
+var _vectorHandler = _interopRequireDefault(require("../common/vector-handler.js"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
