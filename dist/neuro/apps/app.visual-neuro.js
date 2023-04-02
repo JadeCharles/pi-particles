@@ -16,6 +16,18 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
 function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+if (typeof require !== "undefined") {
+  var _App = require("../../common/app.js");
+  var _MatrixNeuroApp = require("./app.matrix-neuro.js");
+  //const ActivationFunction = require("../components/activation-function.js");
+  var _NeuronLayer = require("../components/neuron-layer.js");
+  var _Neuron = require("../components/neuron.js");
+  var _NeuronRunner = require("../components/neuron-runner.js");
+  var _NeuronConnector = require("../components/neuron-connector.js");
+  //const NeuroMatrix = require("../components/neuron-matrix.js");
+  var _FeedForwardNueralNetwork = require("../networks/feed-forward.js");
+}
+
 /**
  * @fileoverview Neuro App
  * @version 1.0.0
@@ -25,8 +37,8 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
  * This class is analogous to the Controller. It handles input (data and events) and passes data to
  * the underlying network (this.network) and view. It also handles the logic of the app.
  */
-var NeuroApp = /*#__PURE__*/function (_App) {
-  _inherits(NeuroApp, _App);
+var NeuroApp = /*#__PURE__*/function (_App2) {
+  _inherits(NeuroApp, _App2);
   var _super = _createSuper(NeuroApp);
   function NeuroApp(options) {
     var _options;

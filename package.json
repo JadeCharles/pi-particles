@@ -1,9 +1,9 @@
 {
   "name": "pi-emergence",
-  "version": "1.0.4",
+  "version": "1.0.9",
   "description": "Various emergent phenomena",
   "main": "index.js",
-  "scripts": {
+"scripts": {
     "start": "http-server",
     "test": "test",
     "eject": "echo 'Ejecting, I guess...'",
