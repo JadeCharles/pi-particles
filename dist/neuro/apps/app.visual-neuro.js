@@ -18,12 +18,10 @@ function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _ty
 function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
 var App = require("../../common/app.js");
 var MatrixNeuroApp = require("./app.matrix-neuro.js");
-//const ActivationFunction = require("../components/activation-function.js");
 var NeuronLayer = require("../components/neuron-layer.js");
 var Neuron = require("../components/neuron.js");
 var NeuronRunner = require("../components/neuron-runner.js");
 var NeuronConnector = require("../components/neuron-connector.js");
-//const NeuroMatrix = require("../components/neuron-matrix.js");
 var FeedForwardNueralNetwork = require("../networks/feed-forward.js");
 
 /**
