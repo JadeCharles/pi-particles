@@ -51,12 +51,19 @@ Object.defineProperty(exports, "NeuronRunner", {
     return _neuronRunner["default"];
   }
 });
+Object.defineProperty(exports, "P5NeuroDrawer", {
+  enumerable: true,
+  get: function get() {
+    return _p5NeuroDrawer["default"];
+  }
+});
 var _appVisualNeuro = _interopRequireDefault(require("./apps/app.visual-neuro.js"));
 var _appMatrixNeuro = _interopRequireDefault(require("./apps/app.matrix-neuro.js"));
-var _activationFunction = _interopRequireDefault(require("./components/components/activation-function.js"));
-var _neuronConnector = _interopRequireDefault(require("./components/components/neuron-connector.js"));
-var _neuronLayer = _interopRequireDefault(require("./components/components/neuron-layer.js"));
-var _neuronMatrix = _interopRequireDefault(require("./components/components/neuron-matrix.js"));
-var _neuronRunner = _interopRequireDefault(require("./components/components/neuron-runner.js"));
-var _neuron = _interopRequireDefault(require("./components/components/neuron.js"));
+var _activationFunction = _interopRequireDefault(require("./components/activation-function.js"));
+var _neuronConnector = _interopRequireDefault(require("./components/neuron-connector.js"));
+var _neuronLayer = _interopRequireDefault(require("./components/neuron-layer.js"));
+var _neuronMatrix = _interopRequireDefault(require("./components/neuron-matrix.js"));
+var _neuronRunner = _interopRequireDefault(require("./components/neuron-runner.js"));
+var _neuron = _interopRequireDefault(require("./components/neuron.js"));
+var _p5NeuroDrawer = _interopRequireDefault(require("./p5-neuro-drawer.js"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }

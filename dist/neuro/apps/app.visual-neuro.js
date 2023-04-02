@@ -308,3 +308,4 @@ var NeuroApp = /*#__PURE__*/function (_App) {
 /** Use singleton pattern to ensure only one instance of the app is created, but more because I'm lazy and want to access the instance from anywhere */
 _defineProperty(NeuroApp, "instance", new NeuroApp());
 _defineProperty(NeuroApp, "retry", 0);
+if (typeof module !== "undefined") module.exports = NeuroApp;else console.log("NeuroApp not exported. Running in browser.");

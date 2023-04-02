@@ -28,3 +28,4 @@ var P5Ui = /*#__PURE__*/function () {
   }]);
   return P5Ui;
 }();
+if (typeof module !== "undefined") module.exports = P5Ui;
