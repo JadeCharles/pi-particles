@@ -3,7 +3,7 @@ const path = require('path');
 console.log("Web-packing now...");
 
 module.exports = {
-  entry: './dist/index.js',
+  entry: './dist/neuro/package.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js'

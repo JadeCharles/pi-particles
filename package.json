@@ -8,8 +8,8 @@
     "test": "test",
     "eject": "echo 'Ejecting, I guess...'",
     "clean": "rm -rf dist",
-    "prepare-build": "echo 'Preparing (clean, Env, babel)...' && npm run clean && NODE_ENV=production babel src --out-dir dist",
-    "copy": "cp package.json dist/. && cp README.md dist/. && cd src && find . \\( ! -name '*.original.css' -a \\( -name '*.css' -o -name '*.png' -o -name '*.svg' \\) \\) | cpio -pdm ../dist && cd ..",
+    "prepare-build": "echo 'Preparing (clean, Env, babel)...' && npm run clean && NODE_ENV=production babel lib --out-dir dist",
+    "copy": "cp package.json dist/. && cp README.md dist/. && cd lib && find . \\( ! -name '*.original.css' -a \\( -name '*.css' -o -name '*.png' -o -name '*.svg' \\) \\) | cpio -pdm ../dist && cd ..",
     "build": "echo 'Building...' && npm run prepare-build && npm run copy"
   },
   "dependencies": {
