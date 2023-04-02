@@ -1,55 +1,82 @@
 # JavaScript Emergence Engine
 
-# Particle Life
+A collection of libraries demonstrating emergence of some sort.
+I tried to stay away from major frameworks, but that isn't always
+very reasonable.
 
-JavaScript implementation of Particle Life implementation, using the p5.js library
-https://p5js.org/
+## Running
 
-Inspired by this video (which looks way better than mine).
-https://www.youtube.com/watch?v=p4YirERTVF0
+Best way is to use `http-server`
 
-Mostly pure JavaScript, but used JQuery for the UI controls. The dependencies are included in the project's `/scripts` directory (not CDN) so it should work out the box.
-[Try it](./index.html)
+... But you can simply double click any of the index.html file individually. Just know that navigation may be a bit funky.
 
-Only tested in Chrome, so no guarantees on other browsers :/
+# 3rd Party Libraries
 
-## Features and Usage
+- JQuery - Mainly for UI/UX outside the canvas UX (React was more trouble than it was worth)
+- p5.js - For drawing/rendering and Vector math
+- axios - Not really used as of now, but will be used to save/load snapshots (among other cool stuff that you should be real excited about)
+- http-server - Not included, and optional. Used to run the project. To install, `cd` into the root directory and run it. Installation steps below:
 
-The app initializes with 0 particles, 4 (out of 8) distinct colors, and random attraction values.
-Right click anywhere on the canvas to spawn 100 particles; colors will be sequential. Left click to spawn a single particle.
+## Install http-server Utility
 
-Click one of the colors in the top panel to set the color (click the same color to de-select). When a color is selected, spawning will result in the same color selected.
+`http-server` is a convenient utility that spins up a server instance on your local box
+[Check the http-server npm page](https://www.npmjs.com/package/http-server) for more info.
 
-Keyboard: Press `r` to re-randomize the attraction values, press `u` to set all the attraction values to 1.0 (they'll lump into a ball, like a planet)
+```
+> npm install -g http-server
+```
 
-There's an invisible force field around the edges of the canvas to keep the particles in the visible area (camera view coming later)
+## Run http-server Utility
 
-## Coding Pattern Notes
+`cd` into the root of this project and run it. Steps are:
 
-Since JQuery is used for most of the UI, it has a tendancy to hijack the "this" variable, so referencing the global "app" variable makes more sense
+```
+> cd pi-particles
+> http-server
+```
 
-## Coming Soon (i.e, when time permits)
+# Architecture
 
-This implementation can be further optimized. In the current version (v1.0.0) there's a quad-tree class, but haven't had time to fully complete/implement it.
+Each of the modules will (eventually) have the same general arhitecture and pattern.
+It consists of three swappable abstraction layers (not to be confused with Neural Network Layers - So we will also refer to the abstraction layers as "`segments`" in this repo), plus the "non-swappable"
+Presentation Layer, which is a web page/DOM
 
-Upcoming Features:
+> ### Data Layer
 
-1. Editing individual attraction values
-2. Quadtree for performance boost
-3. More Spawn Modes (spiral, squares, random large circles, etc) - Right now there's only Left Click (spawn 1), Right CLick (spawn many), and Mouse Drag (spawn where the mouse moves)
-4. Particle rotation so the attraction forces can be more granular and based on what "side" of the particle is facing (or touching) another particle
-5. New binding modes to try to encourage larger/more complex structures
-6. Eating + Procreation => Evolution
-7. DNA???
-8. More UI/controls
-9. Save/Load Configs
-10. Camera view to pan L/R/U/D
-11. Fixed particles (so moving particles can bounce off/collidet/black-hole/etc)
+> ### Business Logic
+>
+> This is where most, if not all, of the guts are. Inside the `/lib` directory, there are subfolders
+> respectively named after each module, plus a `/lib/common` directory that holds all the reusable
+> component JavaScript files. Each of the modules get more specialized/specific, the deeper you go into the project's folder structure
 
-# Neural Network (neuro.html)
+> ### Rendering Layer
 
-Still incomplete - No description yet
+Basically, the layer that draws onto the canvas or other medium. Canvas is the most common,
+but others like CSS/DOM,
 
-# Tentacle Physics (tentacles.html)
+> ### Presentation Layer
 
-Still incomplete - No description yet
+Normal web page/DOM. JQuery is used here, but you can use React, Veu, etc.
+
+# Modules
+
+Currently, there are three base modules: Neural Networks, Particles, and Tentacles.
+
+Toast.
+
+## Neural Network (/lib/neuro)
+
+The furthest along. Currently a Feed Forward network using matrix math, and a NeuroApp visualizer which uses p5 for both vector math and drawing to the canvas.
+You can swap out the math module and the drawing module. See the readme file.
+[Neuro Readme.md](lib/neuro).
+
+## Particle Life
+
+This "works" but probably consider this "as is." The UI/UX is funky, and I'm not 100% on the close-quarters repulsive force function
+[Particles Readme.md](lib/particles).
+
+## Tentacle Physics (/lib/tentacles)
+
+I need to put some time into this one still. The demo is good for a tentacle following the mouse, but I need to implement pendulum/gravity physics and state changing, as this
+will eventually be a game element (NPC or otherwise)
+[Tentacles Readme.md](lib/tentacles).

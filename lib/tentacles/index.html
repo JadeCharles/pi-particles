@@ -6,6 +6,7 @@
     <title>Tentacle Life</title>
     <script src="../common/jquery-3.6.3.min.js"></script>
     <script src="../common/p5.js"></script>
+    <script src="../common/ui/p5.ui.js"></script>
     <script src="../common/app.js"></script>
     <script src="../common/agent.js"></script>
     <script src="components/tentacle-tip.js"></script>
@@ -126,6 +127,7 @@
             setTimeout(() => { 
                 const options = { x: 600, y: 400, color: "green", name: "Jade", tentacleCount: 1, tentacleSegmentLength: 128, tentacleSegmentCount: 4 };
                 TentacleApp.instance.createAgent(options);
+                console.log("Created agent");
             }, 1000);
             
         });

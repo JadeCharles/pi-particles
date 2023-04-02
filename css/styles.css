@@ -16,11 +16,32 @@
     --selected-color: #FFFFFF88;
 }
 
+main { 
+    display: block;
+    position: relative;
+}
+
+/** This sets the size of the canvas */
+#main-canvas {
+    height: calc(100vh - 220px);
+    border-bottom: var(--border);
+}
+
+#x-canvas { 
+    width: 256px;
+    height: 256px;
+    border: #FF000033 1px solid;
+}
+
 body {
     margin: 0;
     font-family: Arial, Tahoma;
     background-color: var(--background-color);
     color: var(--text-color);
+}
+
+body#portable-neuro {
+    background-color: #330000;
 }
 
 header { 
@@ -316,13 +337,6 @@ footer>p > span {
 
 canvas { 
     background-color: transparent;
-}
-
-main {
-    display: block;
-    position: relative;
-    height: calc(100vh - 220px);
-    border-bottom: var(--border);
 }
 
 #footer { 

@@ -6,23 +6,32 @@
     <title>Neuro Networks</title>
 
     <!-- The script includes need to be in this specific order -->
-    <script src="../common/jquery-3.6.3.min.js"></script>
-    <script src="../common/p5.js"></script>
+
+    <!-- Foundational includes -->
+    <script src="../common/jquery-3.6.3.min.js" x-data="note: Only used in this index.html file for ui/ux"></script>
+    <script src="../common/p5.js" x-data="note: Used for drawing and vector math (which is used for drawing)"></script>
+    <script src="p5-neuro-drawer.js" x-data="note: Defines the neuron drawing function for the different neuron visual components"></script>
+    <script src="../common/vector-handler.js" x-data="note: Defines the vector object, along with the respective math operations"></script>
     <script src="../common/app.js"></script>
     <script src="../common/agent.js"></script>
 
+    <!-- Core includes -->
     <script src="components/neuron-matrix.js"></script>
     <script src="components/activation-function.js"></script>
     <script src="apps/app.matrix-neuro.js"></script>
+
+    <!-- Visual includes -->
     <script src="components/neuron.js"></script>
     <script src="components/neuron-connector.js"></script>
     <script src="components/neuron-layer.js"></script>
-
     <script src="networks/feed-forward.js"></script>
     <script src="components/neuron-runner.js"></script>
     <script src="apps/app.visual-neuro.js"></script>
-    <script src="apps/sketch.neuro.js"></script>
 
+    <!-- Rendering includes -->
+    <script src="sketch.neuro.js"></script>
+
+    <!-- CSS/other -->
     <link href="../../css/fontawesome/css/fontawesome.min.css" rel="stylesheet">
     <link href="../../css/fontawesome/css/brands.min.css" rel="stylesheet">
     <link href="../../css/fontawesome/css/solid.min.css" rel="stylesheet">
@@ -135,12 +144,12 @@
     <script src="../common/ui/ui.js"></script>
 
     <script>
+        // ------ This is all the form event handlers and value setters */
+        
         App.initMainMenu({ neuro: true });
 
-        // ------ This is all the form event handlers and value setters */
-
         /** NeuroApp init */
-        NeuroApp.init();
+        NeuroApp.init(P5NeuroDrawer);
 
         window.onresize = function () {
             const app = NeuroApp.instance;
@@ -152,8 +161,6 @@
 
         /** JQuery init */
         $(document).ready(() => {
-            console.warn("Jquery Initted and Ready.");
-
             const button = $("#input-value-button");
 
             button.off();   // In case it was already bound

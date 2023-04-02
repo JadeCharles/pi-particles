@@ -2,14 +2,14 @@
 
 # Particle Life
 
-JavaScript implementation of Particle Life implementation, using the p5.js library
+JavaScript implementation of Particle Life implementation, using the p5.js library - Not in an amazing state. It isn't layered properly. Soon though... Soon.
 https://p5js.org/
 
 Inspired by this video (which looks way better than mine).
 https://www.youtube.com/watch?v=p4YirERTVF0
 
 Mostly pure JavaScript, but used JQuery for the UI controls. The dependencies are included in the project's `/scripts` directory (not CDN) so it should work out the box.
-[Try it](./index.html)
+[Try it](index.html)
 
 Only tested in Chrome, so no guarantees on other browsers :/
 
