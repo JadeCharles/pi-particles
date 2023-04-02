@@ -19,22 +19,6 @@ var ActivationFunction = /*#__PURE__*/function () {
     this.getPartialDerivative = derivativeFunction;
   }
   _createClass(ActivationFunction, null, [{
-    key: "fromName",
-    value: function fromName(name) {
-      if (typeof name !== "string" || !name) throw new Error("Invalid name passed to ActivationFunction.fromName: " + name);
-      switch (name) {
-        case "Sigmoid":
-          return ActivationFunction.sigmoidActivationFunction;
-        case "ReLU":
-          return ActivationFunction.reLUActivationFunction;
-        case "HyperTan":
-          return ActivationFunction.hyperTanActivationFunction;
-        default:
-          console.error("Unknown activation function name: " + name);
-          return null;
-      }
-    }
-  }, {
     key: "sigmoid",
     value: function sigmoid(x) {
       return 1 / (1 + Math.exp(-x));
@@ -64,14 +48,30 @@ var ActivationFunction = /*#__PURE__*/function () {
     value: function rectifyLinearPrime(y) {
       return y > 0 ? 1 : 0;
     }
+  }, {
+    key: "fromName",
+    value: function fromName(name) {
+      if (typeof name !== "string" || !name) throw new Error("Invalid name passed to ActivationFunction.fromName: " + name);
+      switch (name) {
+        case "Sigmoid":
+          return ActivationFunction.sigmoidActivationFunction;
+        case "ReLU":
+          return ActivationFunction.reLUActivationFunction;
+        case "HyperTan":
+          return ActivationFunction.hyperTanActivationFunction;
+        default:
+          console.error("Unknown activation function name: " + name);
+          return null;
+      }
+    }
   }]);
   return ActivationFunction;
 }();
 _defineProperty(ActivationFunction, "sigmoidActivationFunction", new ActivationFunction(ActivationFunction.sigmoid, ActivationFunction.sigmoidPrime, "Sigmoid"));
 _defineProperty(ActivationFunction, "reLUActivationFunction", new ActivationFunction(ActivationFunction.rectifyLinear, ActivationFunction.rectifyLinearPrime, "ReLU"));
 _defineProperty(ActivationFunction, "hyperTanActivationFunction", new ActivationFunction(ActivationFunction.hyperTan, ActivationFunction.hyperTanPrime, "HyperTan"));
-if (typeof module === 'undefined') {
-  console.log("Can't export. Running ActivationFunction in-browser");
-} else {
+if (typeof module !== 'undefined') {
   module.exports = ActivationFunction;
+} else {
+  console.log("Can't export. Running ActivationFunction in-browser");
 }
