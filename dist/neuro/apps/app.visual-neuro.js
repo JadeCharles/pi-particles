@@ -1,5 +1,14 @@
 "use strict";
 
+var _activationFunction = _interopRequireDefault(require("../components/activation-function.js"));
+var _app = _interopRequireDefault(require("../../common/app.js"));
+var _appMatrixNeuro = _interopRequireDefault(require("./app.matrix-neuro.js"));
+var _neuronLayer = _interopRequireDefault(require("../components/neuron-layer.js"));
+var _neuron = _interopRequireDefault(require("../components/neuron.js"));
+var _neuronRunner = _interopRequireDefault(require("../components/neuron-runner.js"));
+var _neuronConnector = _interopRequireDefault(require("../components/neuron-connector.js"));
+var _feedForward = _interopRequireDefault(require("../networks/feed-forward.js"));
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
@@ -15,18 +24,16 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
-if (typeof require !== "undefined") {
-  var _ActivationFunction = require("../components/activation-function.js");
-  var _App = require("../../common/app.js");
-  var _MatrixNeuroApp = require("./app.matrix-neuro.js");
-  var _NeuronLayer = require("../components/neuron-layer.js");
-  var _Neuron = require("../components/neuron.js");
-  var _NeuronRunner = require("../components/neuron-runner.js");
-  var _NeuronConnector = require("../components/neuron-connector.js");
-  var _FeedForwardNueralNetwork = require("../networks/feed-forward.js");
-}
-
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); } // if (typeof require !== "undefined") {
+//     const ActivationFunction = require("../components/activation-function.js");
+//     const App = require("../../common/app.js");
+//     const MatrixNeuroApp = require("./app.matrix-neuro.js");
+//     const NeuronLayer = require("../components/neuron-layer.js");
+//     const Neuron = require("../components/neuron.js");
+//     const NeuronRunner = require("../components/neuron-runner.js");
+//     const NeuronConnector = require("../components/neuron-connector.js");
+//     const FeedForwardNueralNetwork = require("../networks/feed-forward.js");
+// }
 /**
  * @fileoverview Neuro App
  * @version 1.0.0
@@ -36,8 +43,8 @@ if (typeof require !== "undefined") {
  * This class is analogous to the Controller. It handles input (data and events) and passes data to
  * the underlying network (this.network) and view. It also handles the logic of the app.
  */
-var NeuroApp = /*#__PURE__*/function (_App2) {
-  _inherits(NeuroApp, _App2);
+var NeuroApp = /*#__PURE__*/function (_App) {
+  _inherits(NeuroApp, _App);
   var _super = _createSuper(NeuroApp);
   function NeuroApp(options) {
     var _options;
@@ -51,9 +58,9 @@ var NeuroApp = /*#__PURE__*/function (_App2) {
       name: "Unnamed"
     };
     _this.name = ((_options = options) === null || _options === void 0 ? void 0 : _options.name) || "Neuro App";
-    var sig = new ActivationFunction(ActivationFunction.sigmoid, ActivationFunction.sigmoidPrime, "Sigmoid");
+    var sig = new _activationFunction["default"](_activationFunction["default"].sigmoid, _activationFunction["default"].sigmoidPrime, "Sigmoid");
     ;
-    _this.network = new FeedForwardNueralNetwork(_assertThisInitialized(_this), {
+    _this.network = new _feedForward["default"](_assertThisInitialized(_this), {
       activationFunction: sig
     });
     _this.text = "Feed-Forward Neural Network";
@@ -82,7 +89,7 @@ var NeuroApp = /*#__PURE__*/function (_App2) {
       for (var _len2 = arguments.length, layerNeuronCounts = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
         layerNeuronCounts[_key2] = arguments[_key2];
       }
-      var nn = new MatrixNeuroApp(layerNeuronCounts);
+      var nn = new _appMatrixNeuro["default"](layerNeuronCounts);
       this.network.initWithMatrixNetwork(nn);
     }
   }, {
@@ -143,7 +150,7 @@ var NeuroApp = /*#__PURE__*/function (_App2) {
           case "keyt":
             var epocCount = 10000;
             console.log("Training and testing XOR example x" + epocCount + "...");
-            var trainedNetwork = NeuroApp.trainAndTestXor(new MatrixNeuroApp(2, 8, 4, 1), epocCount, 3);
+            var trainedNetwork = NeuroApp.trainAndTestXor(new _appMatrixNeuro["default"](2, 8, 4, 1), epocCount, 3);
             NeuroApp.instance.network.initWithMatrixNetwork(trainedNetwork);
             if (typeof _this4.refreshInputFields === "function") _this4.refreshInputFields();else console.warn("No refreshInputFields() method found");
             _this4.text = "";
@@ -176,7 +183,7 @@ var NeuroApp = /*#__PURE__*/function (_App2) {
         }
       }
       var layers = [];
-      if (!!args[0] && args[0] instanceof MatrixNeuroApp) {
+      if (!!args[0] && args[0] instanceof _appMatrixNeuro["default"]) {
         var nn = args[0];
         this.network.initWithMatrixNetwork(nn);
       }
@@ -184,23 +191,23 @@ var NeuroApp = /*#__PURE__*/function (_App2) {
       // If no layers were added, add default layers
       if (this.network.layers.length <= 1) {
         console.log("Setting up default layered network");
-        layers = [new NeuronLayer(this.network, {
+        layers = [new _neuronLayer["default"](this.network, {
           name: "Input Layer",
           neuronCount: 3,
           biasCount: 1
-        }), new NeuronLayer(this.network, {
+        }), new _neuronLayer["default"](this.network, {
           name: "Hidden Layer 1",
           neuronCount: 5,
           biasCount: 1
-        }), new NeuronLayer(this.network, {
+        }), new _neuronLayer["default"](this.network, {
           name: "Hidden Layer 2",
           neuronCount: 7,
           biasCount: 1
-        }), new NeuronLayer(this.network, {
+        }), new _neuronLayer["default"](this.network, {
           name: "Hidden Layer 3",
           neuronCount: 5,
           biasCount: 1
-        }), new NeuronLayer(this.network, {
+        }), new _neuronLayer["default"](this.network, {
           name: "Output Layer",
           neuronCount: 1
         })];
@@ -282,9 +289,9 @@ var NeuroApp = /*#__PURE__*/function (_App2) {
       });
       if (!!NeuronDrawer) {
         if (typeof NeuronDrawer.drawNeuron !== "function") throw new Error("NeuronApp.init: NeuronDrawer.drawNeuron is not a function.");
-        Neuron.defaultDrawer.draw = NeuronDrawer.drawNeuron;
-        if (typeof NeuronDrawer.drawNeuronConnector !== "function") console.warn("NeuronApp.init: NeuronDrawer.drawNeuronConnector is not a function. Neuron connectors will not be displayed.");else NeuronConnector.defaultDrawer.draw = NeuronDrawer.drawNeuronConnector;
-        if (typeof NeuronDrawer.drawNeuronRunner !== "function") console.warn("NeuronApp.init: NeuronDrawer.drawNeuronRunner is not a function. Neuron runners will not be displayed.");else NeuronRunner.defaultDrawer.draw = NeuronDrawer.drawNeuronRunner;
+        _neuron["default"].defaultDrawer.draw = NeuronDrawer.drawNeuron;
+        if (typeof NeuronDrawer.drawNeuronConnector !== "function") console.warn("NeuronApp.init: NeuronDrawer.drawNeuronConnector is not a function. Neuron connectors will not be displayed.");else _neuronConnector["default"].defaultDrawer.draw = NeuronDrawer.drawNeuronConnector;
+        if (typeof NeuronDrawer.drawNeuronRunner !== "function") console.warn("NeuronApp.init: NeuronDrawer.drawNeuronRunner is not a function. Neuron runners will not be displayed.");else _neuronRunner["default"].defaultDrawer.draw = NeuronDrawer.drawNeuronRunner;
       }
     }
   }, {
@@ -319,7 +326,7 @@ var NeuroApp = /*#__PURE__*/function (_App2) {
     }
   }]);
   return NeuroApp;
-}(App);
+}(_app["default"]);
 /** Use singleton pattern to ensure only one instance of the app is created, but more because I'm lazy and want to access the instance from anywhere */
 _defineProperty(NeuroApp, "instance", new NeuroApp());
 _defineProperty(NeuroApp, "retry", 0);
