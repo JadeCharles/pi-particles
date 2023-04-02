@@ -53,9 +53,10 @@ var MatrixNeuroApp = /*#__PURE__*/function () {
       if (typeof arg !== "number") throw new Error("MatrixNeuroApp constructor arguments must be numbers. They reporesent the number of neurons per layer (excluding bias)");
       this.neuronCounts.push(arg);
     }
-    this.activationFunction = MatrixNeuroApp.defaultActivationFunction; // Try different ones, based on the problem
-    this.learningRate = MatrixNeuroApp.defaultLearningRate; // Try different ones, based on the problem. 0.075 feels like a decent default
+    this.activationFunction = new ActivationFunction(ActivationFunction.sigmoid, ActivationFunction.sigmoidPrime, "Sigmoid");
 
+    // Try different ones, based on the problem. 0.075 feels like a decent default
+    this.learningRate = MatrixNeuroApp.defaultLearningRate;
     this.biases = [];
     this.messages = []; // Keep some logs
     this.weightMatrices = [];
@@ -160,7 +161,7 @@ var MatrixNeuroApp = /*#__PURE__*/function () {
     key: "setActivationFunction",
     value: function setActivationFunction() {
       var activationFunction = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-      this.activationFunction = activationFunction || MatrixNeuroApp.defaultActivationFunction;
+      this.activationFunction = activationFunction || this.activationFunction;
       return this;
     }
 
@@ -247,7 +248,6 @@ var MatrixNeuroApp = /*#__PURE__*/function () {
   }]);
   return MatrixNeuroApp;
 }();
-_defineProperty(MatrixNeuroApp, "defaultActivationFunction", ActivationFunction.sigmoidActivationFunction);
 _defineProperty(MatrixNeuroApp, "defaultLearningRate", 0.075);
 if (typeof module === 'undefined') {
   console.log("Can't export. Running MatrixNeuroApp in-browser");
