@@ -1,6 +1,6 @@
 {
   "name": "pi-emergence",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Various emergent phenomena",
   "main": "index.js",
 "scripts": {
