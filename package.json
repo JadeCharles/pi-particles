@@ -1,8 +1,8 @@
 {
   "name": "pi-emergence",
-  "version": "1.0.11",
+  "version": "1.0.13",
   "description": "Various emergent phenomena",
-  "main": "index.js",
+  "main": "index.html",
 "scripts": {
     "start": "http-server",
     "test": "test",
