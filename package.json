@@ -2,11 +2,27 @@
   "name": "pi-emergence",
   "version": "1.0.0",
   "description": "Various emergent phenomena",
-  "main": "index.html",
+  "main": "index.js",
   "scripts": {
-    "test": "test"
+    "start": "http-server",
+    "test": "test",
+    "eject": "echo 'Ejecting, I guess...'",
+    "clean": "rm -rf dist",
+    "prepare-build": "echo 'Preparing (clean, Env, babel)...' && npm run clean && NODE_ENV=production babel src --out-dir dist",
+    "copy": "cp package.json dist/. && cp README.md dist/. && cd src && find . \\( ! -name '*.original.css' -a \\( -name '*.css' -o -name '*.png' -o -name '*.svg' \\) \\) | cpio -pdm ../dist && cd ..",
+    "build": "echo 'Building...' && npm run prepare-build && npm run copy"
   },
-  "repository": {
+  "dependencies": {
+    "@babel/cli": "^7.20.7",
+    "@babel/core": "^7.20.12",
+    "@babel/node": "^7.20.7",
+    "web-vitals": "^2.1.4",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
+  },
+
+  
+"repository": {
     "type": "git",
     "url": "pi-particles"
   },

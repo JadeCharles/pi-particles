@@ -8,7 +8,7 @@ very reasonable.
 
 Best way is to use `http-server`
 
-... But you can simply double click any of the index.html file individually. Just know that navigation may be a bit funky.
+... But you can simply double click any of the index.html files individually. Just know that navigation may be a bit funky.
 
 # 3rd Party Libraries
 
