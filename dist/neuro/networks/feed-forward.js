@@ -1,5 +1,10 @@
 "use strict";
 
+var _activationFunction = _interopRequireDefault(require("../components/activation-function.js"));
+var _neuronRunner = _interopRequireDefault(require("../components/neuron-runner.js"));
+var _appMatrixNeuro = _interopRequireDefault(require("../apps/app.matrix-neuro.js"));
+var _neuronLayer = _interopRequireDefault(require("../components/neuron-layer.js"));
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
@@ -11,14 +16,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
-if (typeof require !== "undefined") {
-  var _ActivationFunction = require("../components/activation-function.js");
-  var _NeuronRunner = require("../components/neuron-runner.js");
-  var _MatrixNeuroApp = require("../apps/app.matrix-neuro.js");
-  var _NeuronLayer = require("../components/neuron-layer.js");
-}
-
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); } // if (typeof require !== "undefined") {
+//     const ActivationFunction = require("../components/activation-function.js");
+//     const NeuronRunner = require("../components/neuron-runner.js");
+//     const MatrixNeuroApp = require("../apps/app.matrix-neuro.js");
+//     const NeuronLayer = require("../components/neuron-layer.js");
+// }
 /**
  * Logical and visual (Visualogical) representation of a standard FeedForward network.
  * The matrix version (which does all the real work) gets converted to this for visual and intuitive representation.
@@ -33,8 +36,8 @@ var FeedForwardNueralNetwork = /*#__PURE__*/function () {
     this.layers = options.layers;
     if (!Array.isArray(this.layers)) this.layers = [];
     this.squashFunction = options.squashFunction;
-    if (!(options.squashFunction instanceof ActivationFunction)) {
-      this.squashFunction = ActivationFunction.sigmoidActivationFunction; // Sigmoid by default
+    if (!(options.squashFunction instanceof _activationFunction["default"])) {
+      this.squashFunction = _activationFunction["default"].sigmoidActivationFunction; // Sigmoid by default
     }
 
     this.matrixNetwork = null; // The matrix/math guts for training
@@ -55,7 +58,7 @@ var FeedForwardNueralNetwork = /*#__PURE__*/function () {
         console.log("Skipping init of FeedForwardNueralNetwork because it already has layers");
         return;
       }
-      if (!(matrixNeuroApp instanceof MatrixNeuroApp)) throw new Error("Cannot setup from matrix when matrix is not a MatrixNeuroApp");
+      if (!(matrixNeuroApp instanceof _appMatrixNeuro["default"])) throw new Error("Cannot setup from matrix when matrix is not a MatrixNeuroApp");
       var i = 0;
       var layers = [];
       for (i = 0; i < matrixNeuroApp.neuronCounts.length - 1; i++) {
@@ -66,11 +69,11 @@ var FeedForwardNueralNetwork = /*#__PURE__*/function () {
           neuronCount: neuronCount,
           biasCount: 1
         };
-        var hiddenLayer = new NeuronLayer(this, options);
+        var hiddenLayer = new _neuronLayer["default"](this, options);
         layers.push(hiddenLayer);
       }
       var outputsCount = matrixNeuroApp.neuronCounts[matrixNeuroApp.neuronCounts.length - 1];
-      var outputLayer = new NeuronLayer(this, {
+      var outputLayer = new _neuronLayer["default"](this, {
         name: "Output Layer",
         neuronCount: outputsCount,
         biasCount: 0
@@ -111,7 +114,7 @@ var FeedForwardNueralNetwork = /*#__PURE__*/function () {
     value: function createRunner(neuron) {
       var target = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       var speed = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 5;
-      var wayPoints = NeuronRunner.createRandomConnectorMap(neuron);
+      var wayPoints = _neuronRunner["default"].createRandomConnectorMap(neuron);
       console.warn("Waypoints: " + wayPoints.length);
       var options = {
         wayPoints: wayPoints,
@@ -119,7 +122,7 @@ var FeedForwardNueralNetwork = /*#__PURE__*/function () {
         speed: speed,
         twoWay: true
       };
-      var runner = new NeuronRunner(this, options);
+      var runner = new _neuronRunner["default"](this, options);
       this.runners.push(runner);
       runner.run();
       console.log("Runner Created: " + runner.id);
@@ -137,13 +140,13 @@ var FeedForwardNueralNetwork = /*#__PURE__*/function () {
     key: "setupFromOld",
     value: function setupFromOld(matrixNeuroApp) {
       if (this.layers.length > 0) throw new Error("Cannot setup from matrix when layers already exist");
-      if (!(matrixNeuroApp instanceof MatrixNeuroApp)) throw new Error("Cannot setup from matrix when matrix is not a MatrixNeuroApp");
+      if (!(matrixNeuroApp instanceof _appMatrixNeuro["default"])) throw new Error("Cannot setup from matrix when matrix is not a MatrixNeuroApp");
       var i = 0;
       var j = 0;
       var rowIndex, columnIndex;
 
       // Create the first layer (input layer)
-      var layers = [new NeuronLayer(this, {
+      var layers = [new _neuronLayer["default"](this, {
         name: "Input Layer",
         neuronCount: matrixNeuroApp.input_nodes + 1,
         biasCount: 1
@@ -152,7 +155,7 @@ var FeedForwardNueralNetwork = /*#__PURE__*/function () {
       // Create the hidden layers
       for (i = 0; i < matrixNeuroApp.hidden_nodes.length; i++) {
         var hiddenLayerNeuronCount = matrixNeuroApp.hidden_nodes[i] + 1; // +1 for bias
-        var hiddenLayer = new NeuronLayer(this, {
+        var hiddenLayer = new _neuronLayer["default"](this, {
           name: "Hidden Layer " + i,
           neuronCount: hiddenLayerNeuronCount,
           biasCount: 1
@@ -161,7 +164,7 @@ var FeedForwardNueralNetwork = /*#__PURE__*/function () {
       }
 
       // Create the output layers
-      var outputLayer = new NeuronLayer(this, {
+      var outputLayer = new _neuronLayer["default"](this, {
         name: "Output Layer",
         neuronCount: matrixNeuroApp.output_nodes
       });
