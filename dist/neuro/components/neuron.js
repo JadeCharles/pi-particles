@@ -1,6 +1,7 @@
 "use strict";
 
 var _vectorHandler = _interopRequireDefault(require("../../common/vector-handler.js"));
+var _agent = _interopRequireDefault(require("../../common/agent.js"));
 var _appVisualNeuro = _interopRequireDefault(require("../apps/app.visual-neuro.js"));
 var _neuronLayer = _interopRequireDefault(require("./neuron-layer.js"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
@@ -25,7 +26,9 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
  * Logical representation of a neuron in a neural network. 
  * The matrix version (which does all the real work) gets converted to this for visual and intuitive representation.
  * 
- * @dependencies: NeuroApp, NeuroAgent, NeuroConnector
+ * @requires: VectorHandler
+ * @requires: Agent
+ * @requires: NeuroApp
  */
 var Neuron = /*#__PURE__*/function () {
   function Neuron(layer, options) {
@@ -52,7 +55,7 @@ var Neuron = /*#__PURE__*/function () {
 
     // Neuron border color
     if (!options.color) options.color = Neuron.defaultColor;
-    this.agent = new Agent(options);
+    this.agent = new _agent["default"](options);
     this.agent.onPositionUpdate = this.onAgentMove;
     if (this.isBias) {
       this.agent.color = options.color || "#88FFFF";
