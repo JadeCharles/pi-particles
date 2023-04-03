@@ -2,8 +2,9 @@
 
 var _vectorHandler = _interopRequireDefault(require("../../common/vector-handler.js"));
 var _agent = _interopRequireDefault(require("../../common/agent.js"));
-var _appVisualNeuro = _interopRequireDefault(require("../apps/app.visual-neuro.js"));
+var _neuronConnector = _interopRequireDefault(require("./neuron-connector.js"));
 var _neuronLayer = _interopRequireDefault(require("./neuron-layer.js"));
+var _appVisualNeuro = _interopRequireDefault(require("../apps/app.visual-neuro.js"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _readOnlyError(name) { throw new TypeError("\"" + name + "\" is read-only"); }
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
@@ -105,7 +106,7 @@ var Neuron = /*#__PURE__*/function () {
             var options = {
               weight: initialWeightValue
             };
-            var c = new NeuronConnector(this, n, options);
+            var c = new _neuronConnector["default"](this, n, options);
             connectors.push(c);
           }
         }
