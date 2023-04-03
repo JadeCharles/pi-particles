@@ -1,5 +1,6 @@
 "use strict";
 
+var _vectorHandler = _interopRequireDefault(require("../../common/vector-handler.js"));
 var _appVisualNeuro = _interopRequireDefault(require("../apps/app.visual-neuro.js"));
 var _neuronLayer = _interopRequireDefault(require("./neuron-layer.js"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
@@ -34,7 +35,7 @@ var Neuron = /*#__PURE__*/function () {
     if (!options) options = {};
     this.layer = layer;
     this.selectedColor = "yellow";
-    this.vectorHandler = VectorHandler.createP5Handler();
+    this.vectorHandler = _vectorHandler["default"].createP5Handler();
     this.drawer = options.drawer || Neuron.defaultDrawer;
     this.speed = 1.0;
     this.squashFunction = layer.network.squashFunction;
