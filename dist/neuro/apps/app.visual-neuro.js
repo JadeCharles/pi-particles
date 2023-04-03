@@ -233,7 +233,10 @@ var NeuroApp = /*#__PURE__*/function (_App) {
         _neuron["default"].defaultDrawer.draw = NeuronDrawer.drawNeuron;
         if (typeof NeuronDrawer.drawNeuronConnector !== "function") console.warn("NeuronApp.init: NeuronDrawer.drawNeuronConnector is not a function. Neuron connectors will not be displayed.");else _neuronConnector["default"].defaultDrawer.draw = NeuronDrawer.drawNeuronConnector;
         if (typeof NeuronDrawer.drawNeuronRunner !== "function") console.warn("NeuronApp.init: NeuronDrawer.drawNeuronRunner is not a function. Neuron runners will not be displayed.");else _neuronRunner["default"].defaultDrawer.draw = NeuronDrawer.drawNeuronRunner;
+        return true;
       }
+      console.warn("No drawer initialized.");
+      return false;
     }
   }, {
     key: "trainAndTestXor",
