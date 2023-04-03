@@ -319,7 +319,8 @@ var NeuroApp = /*#__PURE__*/function (_App) {
       for (var tc = 0; tc < testCount; tc++) {
         // Train
         for (var i = 0; i < epocs; i++) {
-          var data = random(training_data);
+          var randomIndex = Math.floor(Math.random() * training_data.length);
+          var data = training_data[randomIndex];
           matrixNet.train(data.inputs, data.outputs);
         }
       }
