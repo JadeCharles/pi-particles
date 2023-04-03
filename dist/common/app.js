@@ -105,7 +105,6 @@ var App = /*#__PURE__*/function () {
   }, {
     key: "updateCanvasSize",
     value: function updateCanvasSize(elementId) {
-      var _canvas, _canvas2;
       if (typeof elementId !== "string" || elementId.length === 0) elementId = this.elementId;
       if (typeof document === "undefined") return;
       var canvas = document.getElementById(elementId);
@@ -117,8 +116,12 @@ var App = /*#__PURE__*/function () {
         var message = typeof elementId !== "string" ? "There was no elementId provided to the updateCanvasSize() function." : "Be sure to add a <main></main> element with id='" + elementId + "' to the html page.";
         throw new Error("No canvas found: " + message);
       }
-      this.width = typeof ((_canvas = canvas) === null || _canvas === void 0 ? void 0 : _canvas.offsetWidth) === 'number' ? canvas.offsetWidth : 800;
-      this.height = typeof ((_canvas2 = canvas) === null || _canvas2 === void 0 ? void 0 : _canvas2.offsetHeight) === 'number' ? canvas.offsetHeight - 1 : 500;
+      var w = canvas.offsetWidth || canvas.clientWidth;
+      var h = canvas.offsetHeight || canvas.clientHeight;
+      if (typeof w !== "number" || w <= 0) w = 800;
+      if (typeof h !== "number" || h <= 0) h = 500;
+      this.width = w;
+      this.height = h;
     }
   }], [{
     key: "initMainMenu",
