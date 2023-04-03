@@ -87,11 +87,12 @@ var App = /*#__PURE__*/function () {
   }, {
     key: "refreshCanvas",
     value: function refreshCanvas() {
+      var _this$context;
       if (!this.context) {
         var canvas = this.getCanvas();
-        this.context = canvas === null || canvas === void 0 ? void 0 : canvas.getContext("2d");
+        if (typeof (canvas === null || canvas === void 0 ? void 0 : canvas.getContext) === "function") this.context = canvas === null || canvas === void 0 ? void 0 : canvas.getContext("2d");
       }
-      if (!!this.context) this.context.clearRect(0, 0, this.width, this.height);
+      if (typeof ((_this$context = this.context) === null || _this$context === void 0 ? void 0 : _this$context.clearRect) === "function") this.context.clearRect(0, 0, this.width, this.height);
     }
 
     /**
