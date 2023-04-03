@@ -136,7 +136,7 @@ var NeuronLayer = /*#__PURE__*/function () {
         var n = this.neurons[i];
         var x = this.index * containerWidth + containerWidth / 2.0;
         var y = i * containerHeight + containerHeight / 2.0;
-        n.agent.position.set(x, y);
+        n.vectorHandler.setValues(n, x, y);
       }
       this.neuronCount = this.neurons.length;
     }
