@@ -27,8 +27,8 @@ var App = /*#__PURE__*/function () {
     this.lastMouseY = 0;
   }
   _createClass(App, [{
-    key: "addEventListeners",
-    value: function addEventListeners() {
+    key: "setCanvasEventListeners",
+    value: function setCanvasEventListeners() {
       var _document;
       var suppressContextMenu = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
       var canvas = (_document = document) === null || _document === void 0 ? void 0 : _document.querySelector("canvas");

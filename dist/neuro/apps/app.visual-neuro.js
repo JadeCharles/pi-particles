@@ -73,7 +73,6 @@ var NeuroApp = /*#__PURE__*/function (_App) {
       console.warn("No input values provided because the getInputValues() method was not set. Returning empty array.");
       return [];
     };
-    if (!!_this.addEventListeners()) console.log("Tentacle App mounted");else if (_this.addEventListeners > 1) console.warn("No canvas mounted");
     return _this;
   }
   _createClass(NeuroApp, [{
@@ -86,6 +85,7 @@ var NeuroApp = /*#__PURE__*/function (_App) {
       this.network.initWithMatrixNetwork(nn, {
         vectorHandler: this.vectorHandler
       });
+      return this;
     }
   }, {
     key: "animateRunners",
@@ -121,61 +121,10 @@ var NeuroApp = /*#__PURE__*/function (_App) {
       }
     }
   }, {
-    key: "addEventListeners",
-    value: function addEventListeners() {
-      var _this4 = this;
-      var canvas = _get(_getPrototypeOf(NeuroApp.prototype), "addEventListeners", this).call(this, true);
-      if (!canvas || !this.network) return;
-
-      //canvas.onmousemove = (e) => this.handleMouseMove(e);
-
-      // Handle Key Presses and other events
-      document.addEventListener("keydown", function (e) {
-        var k = e.key.toLowerCase();
-        _this4.selectedKeys[k] = true;
-        switch (k) {
-          case "escape":
-            _this4.clearSelectedNeurons();
-            break;
-          case "a":
-          case "keya":
-            _this4.network.execute(_this4.getInputValues(e));
-            break;
-          case "t":
-          case "keyt":
-            var epocCount = 10000;
-            console.log("Training and testing XOR example x" + epocCount + "...");
-            var trainedNetwork = NeuroApp.trainAndTestXor(new _appMatrixNeuro["default"](2, 8, 4, 1), epocCount, 3);
-            _this4.network.initWithMatrixNetwork(trainedNetwork);
-            if (typeof _this4.refreshInputFields === "function") _this4.refreshInputFields();else console.warn("No refreshInputFields() method found");
-            _this4.text = "";
-            break;
-          case "r":
-          case "keyr":
-            _this4.randomizeWeights();
-            _this4.network.execute(_this4.getInputValues(e));
-            break;
-        }
-      });
-      document.addEventListener("keyup", function (e) {
-        var k = e.key.toLowerCase();
-        delete _this4.selectedKeys[k]; // Keep track of keyup events for mult-select and other things
-      });
-
-      console.log("Added event listeners: " + (canvas !== null).toString());
-      return canvas;
-    }
-  }, {
     key: "init",
     value: function init() {
       for (var _len3 = arguments.length, args = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
         args[_key3] = arguments[_key3];
-      }
-      if (this.needsEventListeners) {
-        if (!this.addEventListeners()) {
-          console.error("Failed to setup event listeners. Aborting setup.");
-          return;
-        }
       }
       var layers = [];
       if (!!args[0] && args[0] instanceof _appMatrixNeuro["default"]) {

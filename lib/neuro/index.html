@@ -203,6 +203,59 @@
             return elementList;
         }
 
+        function addEventListeners() {
+            if (!app) return;
+
+            const canvas = app.setCanvasEventListeners(true);
+
+            if (!canvas || !app.network) return;
+
+            //canvas.onmousemove = (e) => app.handleMouseMove(e);
+
+            // Handle Key Presses and other events
+            document.addEventListener("keydown", (e) => {
+                const k = e.key.toLowerCase();
+                app.selectedKeys[k] = true;
+
+                switch (k) {
+                    case "escape":
+                        app.clearSelectedNeurons();
+                        break;
+                    case "a":
+                    case "keya":
+                        app.network.execute(app.getInputValues(e));
+                        break;
+                    case "t":
+                    case "keyt":
+                        const epocCount = 10000;
+                        console.log("Training and testing XOR example x" + epocCount + "...");
+
+                        const trainedNetwork = NeuroApp.trainAndTestXor(new MatrixNeuroApp(2, 8, 4, 1), epocCount, 3);
+                        app.network.initWithMatrixNetwork(trainedNetwork);
+
+                        if (typeof app.refreshInputFields === "function") app.refreshInputFields();
+                        else console.warn("No refreshInputFields() method found");
+
+                        app.text = "";
+                        break;
+                    case "r":
+                    case "keyr":
+                        app.randomizeWeights();
+                        app.network.execute(app.getInputValues(e));
+                        break;
+                }
+            });
+
+            document.addEventListener("keyup", (e) => {
+                const k = e.key.toLowerCase();
+                delete app.selectedKeys[k];    // Keep track of keyup events for mult-select and other things
+            });
+
+            console.log("Added event listeners: " + (canvas !== null).toString());
+
+            return canvas;
+        }
+
         function testNetworkWithInputs(inputs) {
             if (!app) {
                 console.log("No app. Exiting testNetworkWithInputs");
