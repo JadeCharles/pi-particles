@@ -70,6 +70,7 @@ var NeuroApp = /*#__PURE__*/function (_App) {
     _this.selectedKeys = {};
     _this.messages = [];
     _this.results = [];
+    _this.vectorHandler = options.vectorHandler;
     if (typeof document === "undefined") return _possibleConstructorReturn(_this);
     if (!document.getElementById(_this.elementId)) {
       NeuroApp.retry++;
@@ -91,7 +92,9 @@ var NeuroApp = /*#__PURE__*/function (_App) {
         layerNeuronCounts[_key2] = arguments[_key2];
       }
       var nn = new _appMatrixNeuro["default"](layerNeuronCounts);
-      this.network.initWithMatrixNetwork(nn);
+      this.network.initWithMatrixNetwork(nn, {
+        vectorHandler: this.vectorHandler
+      });
     }
   }, {
     key: "animateRunners",

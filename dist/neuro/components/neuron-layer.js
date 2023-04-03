@@ -36,7 +36,8 @@ var NeuronLayer = /*#__PURE__*/function () {
       for (var i = 0; i < options.neuronCount; i++) {
         var n = new _neuron["default"](this, {
           index: i,
-          isBias: i >= biasIndex
+          isBias: i >= biasIndex,
+          vectorHandler: options.vectorHandler
         });
         this.neurons.push(n);
 

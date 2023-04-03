@@ -39,7 +39,7 @@ var Neuron = /*#__PURE__*/function () {
     if (!options) options = {};
     this.layer = layer;
     this.selectedColor = "yellow";
-    this.vectorHandler = typeof p5 !== "undefined" ? _vectorHandler["default"].createP5Handler() : new _vectorHandler["default"]();
+    this.vectorHandler = options.vectorHandler;
     this.drawer = options.drawer || Neuron.defaultDrawer;
     this.speed = 1.0;
     this.squashFunction = layer.network.squashFunction;
@@ -53,6 +53,9 @@ var Neuron = /*#__PURE__*/function () {
     this.isSelected = options.isSelected === true;
     this.label = null;
     this.weightTotal = 0;
+    if (!(this.vectorHandler instanceof _vectorHandler["default"])) {
+      this.vectorHandler = typeof p5 !== "undefined" ? _vectorHandler["default"].createP5Handler() : new _vectorHandler["default"]();
+    }
 
     // Neuron border color
     if (!options.color) options.color = Neuron.defaultColor;

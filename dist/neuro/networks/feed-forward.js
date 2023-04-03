@@ -54,6 +54,7 @@ var FeedForwardNueralNetwork = /*#__PURE__*/function () {
   _createClass(FeedForwardNueralNetwork, [{
     key: "initWithMatrixNetwork",
     value: function initWithMatrixNetwork(matrixNeuroApp) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       if (this.layers.length > 0) {
         console.log("Skipping init of FeedForwardNueralNetwork because it already has layers");
         return;
@@ -64,12 +65,13 @@ var FeedForwardNueralNetwork = /*#__PURE__*/function () {
       for (i = 0; i < matrixNeuroApp.neuronCounts.length - 1; i++) {
         var neuronCount = matrixNeuroApp.neuronCounts[i] + 1; // +1 for bias. The visual feed forward network holds biases as neurons in the feeding layer
         var name = i === 0 ? "Input Layer" : "Hidden Layer " + i;
-        var options = {
+        var layerOptions = {
           name: name,
           neuronCount: neuronCount,
-          biasCount: 1
+          biasCount: 1,
+          vectorHandler: options === null || options === void 0 ? void 0 : options.vectorHandler
         };
-        var hiddenLayer = new _neuronLayer["default"](this, options);
+        var hiddenLayer = new _neuronLayer["default"](this, layerOptions);
         layers.push(hiddenLayer);
       }
       var outputsCount = matrixNeuroApp.neuronCounts[matrixNeuroApp.neuronCounts.length - 1];
