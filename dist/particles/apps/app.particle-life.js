@@ -252,6 +252,7 @@ var ParticleApp = /*#__PURE__*/function () {
     key: "updateCanvasSize",
     value: function updateCanvasSize(elementId) {
       if (typeof elementId !== "string" || elementId.length === 0) elementId = this.elementId;
+      if (typeof document === "undefined") return;
       var canvas = document.getElementById(elementId);
       if (!canvas) {
         var message = typeof elementId !== "string" ? "There was no elementId provided to the updateCanvasSize() function." : "Be sure to add a <main></main> element with id='" + elementId + "' to the html page.";

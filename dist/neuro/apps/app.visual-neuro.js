@@ -70,6 +70,7 @@ var NeuroApp = /*#__PURE__*/function (_App) {
     _this.selectedKeys = {};
     _this.messages = [];
     _this.results = [];
+    if (typeof document === "undefined") return _possibleConstructorReturn(_this);
     if (!document.getElementById(_this.elementId)) {
       NeuroApp.retry++;
       if (NeuroApp.retry > 1) console.error("No canvas found with id: " + _this.elementId + ". Aborting setup.");

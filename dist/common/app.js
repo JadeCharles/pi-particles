@@ -76,6 +76,7 @@ var App = /*#__PURE__*/function () {
     key: "getCanvas",
     value: function getCanvas() {
       var _canvas$tagName, _canvas$tagName2;
+      if (typeof document === "undefined") return null;
       var canvas = document.getElementById("defaultCanvas0"); // Default p5 canvas id
       if (!!canvas && ((_canvas$tagName = canvas.tagName) === null || _canvas$tagName === void 0 ? void 0 : _canvas$tagName.toLowerCase()) === "canvas") return canvas;
       canvas = document.getElementsByTagName("canvas");
@@ -105,6 +106,7 @@ var App = /*#__PURE__*/function () {
     value: function updateCanvasSize(elementId) {
       var _canvas, _canvas2;
       if (typeof elementId !== "string" || elementId.length === 0) elementId = this.elementId;
+      if (typeof document === "undefined") return;
       var canvas = document.getElementById(elementId);
       if (!canvas) {
         var items = document.getElementsByTagName("canvas");

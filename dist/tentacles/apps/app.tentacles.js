@@ -34,6 +34,7 @@ var TentacleApp = /*#__PURE__*/function (_App) {
     _this.selectedIndex = -1;
     _this.agents = [];
     _this.markers = [];
+    if (typeof document === "undefined") return _possibleConstructorReturn(_this, null);
     if (!document.getElementById(_this.elementId)) {
       return _possibleConstructorReturn(_this);
     }
@@ -59,6 +60,7 @@ var TentacleApp = /*#__PURE__*/function (_App) {
       var _this2 = this;
       var canvas = _get(_getPrototypeOf(TentacleApp.prototype), "addEventListeners", this).call(this, true);
       if (!canvas) return;
+      if (typeof document === "undefined") return null;
 
       // Handle Key Press
 

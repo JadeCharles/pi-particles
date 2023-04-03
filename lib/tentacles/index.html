@@ -142,6 +142,7 @@
         // Update ui stuff
         function onRangeViewChange(input, viewId) {
             if (!input) return;
+            if (typeof document === "undefined") return null;
 
             const element = document.getElementById(viewId || "");
             if (!!element) element.innerHTML = input.value;
