@@ -35,7 +35,7 @@ var Neuron = /*#__PURE__*/function () {
     if (!options) options = {};
     this.layer = layer;
     this.selectedColor = "yellow";
-    this.vectorHandler = _vectorHandler["default"].createP5Handler();
+    this.vectorHandler = typeof p5 !== "undefined" ? _vectorHandler["default"].createP5Handler() : new _vectorHandler["default"]();
     this.drawer = options.drawer || Neuron.defaultDrawer;
     this.speed = 1.0;
     this.squashFunction = layer.network.squashFunction;

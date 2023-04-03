@@ -25,7 +25,7 @@ var NeuronRunner = /*#__PURE__*/function () {
     _classCallCheck(this, NeuronRunner);
     if (!(network instanceof _feedForward["default"])) throw new Error("NeuronRunner must be created with a feed-forward network type");
     this.id = options.id || (Math.random() * 99999999).toString(16);
-    this.vectorHandler = _vectorHandler["default"].createP5Handler();
+    this.vectorHandler = typeof p5 !== "undefined" ? _vectorHandler["default"].createP5Handler() : new _vectorHandler["default"]();
     this.network = network;
     this.neuron = options.neuron instanceof _neuron2["default"] ? options.neuron : null;
     this.drawer = options.drawer || NeuronRunner.defaultDrawer;

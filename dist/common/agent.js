@@ -25,7 +25,7 @@ var Agent = /*#__PURE__*/function () {
     this.colorQueue = [];
     this.backgroundColor = options.backgroundColor || null;
     this.outlineColor = options.outlineColor || "#FFFFFF33";
-    this.vectorHandler = _vectorHandler["default"].createP5Handler();
+    this.vectorHandler = typeof p5 !== "undefined" ? _vectorHandler["default"].createP5Handler() : new _vectorHandler["default"]();
     this.position = this.vectorHandler.createVector(options.x || 0, options.y || 0);
     this.size = options.size;
     this.onPositionUpdate = typeof options.onPositionUpdate === "function" ? options.onPositionUpdate : null;
