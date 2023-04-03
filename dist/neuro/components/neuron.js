@@ -35,6 +35,7 @@ var Neuron = /*#__PURE__*/function () {
     if (!layer.app) throw new Error("Neuron must be created with a layer with an app");
     if (!options) options = {};
     this.layer = layer;
+    this.id = options.id || (Math.random() * 9999999999).toString(36) + "-" + new Date().getTime().toString();
     this.app = layer.app;
     this.selectedColor = "yellow";
     this.vectorHandler = options.vectorHandler;
