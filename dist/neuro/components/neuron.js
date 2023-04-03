@@ -4,7 +4,6 @@ var _vectorHandler = _interopRequireDefault(require("../../common/vector-handler
 var _agent = _interopRequireDefault(require("../../common/agent.js"));
 var _neuronConnector = _interopRequireDefault(require("./neuron-connector.js"));
 var _neuronLayer = _interopRequireDefault(require("./neuron-layer.js"));
-var _appVisualNeuro = _interopRequireDefault(require("../apps/app.visual-neuro.js"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _readOnlyError(name) { throw new TypeError("\"" + name + "\" is read-only"); }
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
@@ -19,10 +18,7 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); } // if (typeof require !== "undefined") { 
-//     const NeuroApp = require("../apps/app.visual-neuro.js");
-//     const NeuronLayer = require("./neuron-layer.js");
-// }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
 /**
  * Logical representation of a neuron in a neural network. 
  * The matrix version (which does all the real work) gets converted to this for visual and intuitive representation.
@@ -36,8 +32,10 @@ var Neuron = /*#__PURE__*/function () {
     var _this = this;
     _classCallCheck(this, Neuron);
     if (!layer) throw new Error("Neuron must be created with a layer");
+    if (!layer.app) throw new Error("Neuron must be created with a layer with an app");
     if (!options) options = {};
     this.layer = layer;
+    this.app = layer.app;
     this.selectedColor = "yellow";
     this.vectorHandler = options.vectorHandler;
     this.drawer = options.drawer || Neuron.defaultDrawer;
@@ -225,7 +223,7 @@ _defineProperty(Neuron, "defaultDrawer", {
 });
 _defineProperty(Neuron, "moveNeuronPosition", function (neuron) {
   if (!neuron.targetPos) return false;
-  var app = _appVisualNeuro["default"].instance;
+  var app = neuron.app;
   if (!app) return false;
   if (typeof app.lastMouseX !== "number" || typeof app.lastMouseY !== "number") return;
   var pos = neuron.agent.position;

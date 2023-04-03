@@ -13,7 +13,7 @@
 
 /** Sets up the p5 rendering engine and requisite neural network properties */
 function setup() {
-  var app = NeuroApp.instance;
+  if (typeof app === "undefined") return;
   createCanvas(app.width, app.height); // p5.js function to create the canvas.
 
   console.log("Setup Good: " + app.width + " x " + app.height);
@@ -26,10 +26,10 @@ function setup() {
  * @returns 
  */
 function mousePressed(e) {
-  if (!NeuroApp.instance.isCanvasClick(e)) {
+  if (typeof app === "undefined") return;
+  if (!app.isCanvasClick(e)) {
     return true;
   }
-  var app = NeuroApp.instance;
   var button = e.button;
   app.button = button;
   switch (button) {
@@ -49,7 +49,7 @@ function mousePressed(e) {
 
 /** p5 override implementation */
 function mouseDragged(e) {
-  var app = NeuroApp.instance;
+  if (typeof app === "undefined") return;
 
   // Only allow mouse clicks on the canvas.
   if (!app.isCanvasClick(e)) return;
@@ -79,7 +79,7 @@ function mouseDragged(e) {
  *  2. Then draws the neurons, connectors, etc
  */
 function draw() {
-  var app = NeuroApp.instance;
+  if (typeof app === "undefined") return;
   app.update();
   app.draw();
 
@@ -103,7 +103,7 @@ function handleRightClick(mouseX, mouseY) {
 
 /** Select a neuron by clicking on it - Which fires a "runner" */
 function handleLeftClick(mouseX, mouseY) {
-  var app = NeuroApp.instance;
+  if (typeof app === "undefined") return;
   var n = app.getNeuronAt(mouseX, mouseY);
   if (!!n) {
     var isMultipleSelection = app.selectedKeys["capslock"] || app.selectedKeys["shift"];

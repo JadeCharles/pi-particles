@@ -145,14 +145,13 @@
 
     <script>
         // ------ This is all the form event handlers and value setters */
-        
         App.initMainMenu({ neuro: true });
 
         /** NeuroApp init */
         NeuroApp.init(P5NeuroDrawer);
+        var app = new NeuroApp();
 
         window.onresize = function () {
-            const app = NeuroApp.instance;
             if (!app) return;
 
             app.updateCanvasSize();
@@ -171,22 +170,28 @@
 
             // Lazy way to wait for the UI to really be ready
             setTimeout(() => {
-                if (!NeuroApp.instance.addEventListeners())
-                    console.warn("No event listeners added.");
+                if (!!app){ 
+                    if (!app.addEventListeners()) console.warn("No event listeners added.");
+                    app.getInputValues = getInputsFromForm;
+                }
 
-                NeuroApp.instance.getInputValues = getInputsFromForm;
             }, 750);
         });
 
         /** Create HTML form fields for each of the input neurons */
         function refreshInputFields(minValue = 0, maxValue = 1.0, step = 1) {
+            if (!app) {
+                console.log("No app. Exiting refreshInputFields");
+                return;
+            }
+
             const elementList = $('#input-layer-values');
-            if (!NeuroApp.instance.network?.inputLayer) {
+            if (!app.network?.inputLayer) {
                 console.warn("No network available. Set one up first");
                 return elementList;
             }
 
-            const inputNeurons = NeuroApp.instance.network.inputLayer.neurons.filter((n) => !n.isBias).map((n, index) => {
+            const inputNeurons = app.network.inputLayer.neurons.filter((n) => !n.isBias).map((n, index) => {
                 const elementId = 'input_param_' + index.toString();
                 const element = $('<li class="input-element"><input type="number" min="' + minValue + '" max="' + maxValue + '" value="' + n.value + '" id="' + elementId + '" /></li>');
 
@@ -199,13 +204,18 @@
         }
 
         function testNetworkWithInputs(inputs) {
-            if (!!NeuroApp.instance.network.matrixNetwork) {
-                const nnResult = NeuroApp.instance.network.executeMatrix(inputs);
+            if (!app) {
+                console.log("No app. Exiting testNetworkWithInputs");
+                return;
+            }
+
+            if (!!app.network.matrixNetwork) {
+                const nnResult = app.network.executeMatrix(inputs);
                 console.log("Matrix Results:");
                 console.table(nnResult);
             }
 
-            const piResult = NeuroApp.instance.network.execute(inputs);
+            const piResult = app.network.execute(inputs);
             console.log("Pi Results:");
             console.table(piResult);
         }
@@ -221,16 +231,21 @@
         }
 
         function onRangeViewChange(e) {
+            if (!app) {
+                console.log("No app. Exiting onRangeViewChange");
+                return;
+            }
+
             const input = $(e);
             const value = input.val();
             const id = input.attr('id');
 
-            NeuroApp.instance.network.initWithMatrixNetwork(nn);
+            app.network.initWithMatrixNetwork(nn);
 
         }
 
-        if (!NeuroApp.instance.refreshInputFields)
-            NeuroApp.instance.refreshInputFields = refreshInputFields;
+        if (!!app && !app.refreshInputFields)
+            app.refreshInputFields = refreshInputFields;
 
         /** Get inputs from fields and convert them to an array */
         function getInputsFromForm(sender) {

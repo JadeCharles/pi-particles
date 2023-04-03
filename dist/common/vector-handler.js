@@ -96,7 +96,10 @@ var VectorHandler = /*#__PURE__*/function () {
       };
       handler.setValues = function (vec1, vec2) {
         var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-        if (typeof vec2 === "number" && typeof options === "number") return vec1.set(vec2, options);
+        if (typeof vec2 === "number" && typeof options === "number") {
+          var nv = createVector(vec2, options);
+          return vec1.set(nv);
+        }
         return vec1.set(vec2);
       };
       handler.mult = function (vec1, vec2) {

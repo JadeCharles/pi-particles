@@ -7,9 +7,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); } // if (typeof require !== "undefined") { 
-//     const Neuron = require("../components/neuron.js");
-// }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
 /**
  * Logical representation of a neural network layer.
  * The matrix version (which does all the real work) gets converted to this for visual and intuitive representation.
@@ -20,6 +18,7 @@ var NeuronLayer = /*#__PURE__*/function () {
     if (!((network === null || network === void 0 ? void 0 : network.networkType) > 0)) throw new Error("Invalid network to create layer for: " + network);
     if (!options) options = {};
     this.network = network;
+    this.app = options.app || network.app;
     this.index = network.layers.length;
     this.name = options.name || "";
     this.nerons = options.neurons;
@@ -137,7 +136,7 @@ var NeuronLayer = /*#__PURE__*/function () {
         var n = this.neurons[i];
         var x = this.index * containerWidth + containerWidth / 2.0;
         var y = i * containerHeight + containerHeight / 2.0;
-        n.vectorHandler.setValues(n, x, y);
+        n.vectorHandler.setValues(n.agent.position, x, y);
       }
       this.neuronCount = this.neurons.length;
     }

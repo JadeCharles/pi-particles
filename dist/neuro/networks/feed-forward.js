@@ -16,12 +16,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); } // if (typeof require !== "undefined") {
-//     const ActivationFunction = require("../components/activation-function.js");
-//     const NeuronRunner = require("../components/neuron-runner.js");
-//     const MatrixNeuroApp = require("../apps/app.matrix-neuro.js");
-//     const NeuronLayer = require("../components/neuron-layer.js");
-// }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
 /**
  * Logical and visual (Visualogical) representation of a standard FeedForward network.
  * The matrix version (which does all the real work) gets converted to this for visual and intuitive representation.
@@ -69,7 +64,8 @@ var FeedForwardNueralNetwork = /*#__PURE__*/function () {
           name: name,
           neuronCount: neuronCount,
           biasCount: 1,
-          vectorHandler: options === null || options === void 0 ? void 0 : options.vectorHandler
+          vectorHandler: options === null || options === void 0 ? void 0 : options.vectorHandler,
+          app: this.app
         };
         var hiddenLayer = new _neuronLayer["default"](this, layerOptions);
         layers.push(hiddenLayer);

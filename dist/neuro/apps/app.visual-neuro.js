@@ -24,16 +24,7 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); } // if (typeof require !== "undefined") {
-//     const ActivationFunction = require("../components/activation-function.js");
-//     const App = require("../../common/app.js");
-//     const MatrixNeuroApp = require("./app.matrix-neuro.js");
-//     const NeuronLayer = require("../components/neuron-layer.js");
-//     const Neuron = require("../components/neuron.js");
-//     const NeuronRunner = require("../components/neuron-runner.js");
-//     const NeuronConnector = require("../components/neuron-connector.js");
-//     const FeedForwardNueralNetwork = require("../networks/feed-forward.js");
-// }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
 /**
  * @fileoverview Neuro App
  * @version 1.0.0
@@ -155,7 +146,7 @@ var NeuroApp = /*#__PURE__*/function (_App) {
             var epocCount = 10000;
             console.log("Training and testing XOR example x" + epocCount + "...");
             var trainedNetwork = NeuroApp.trainAndTestXor(new _appMatrixNeuro["default"](2, 8, 4, 1), epocCount, 3);
-            NeuroApp.instance.network.initWithMatrixNetwork(trainedNetwork);
+            _this4.network.initWithMatrixNetwork(trainedNetwork);
             if (typeof _this4.refreshInputFields === "function") _this4.refreshInputFields();else console.warn("No refreshInputFields() method found");
             _this4.text = "";
             break;
@@ -288,9 +279,6 @@ var NeuroApp = /*#__PURE__*/function (_App) {
   }], [{
     key: "init",
     value: function init(NeuronDrawer) {
-      NeuroApp.instance = new NeuroApp({
-        name: "Neuro App"
-      });
       if (!!NeuronDrawer) {
         if (typeof NeuronDrawer.drawNeuron !== "function") throw new Error("NeuronApp.init: NeuronDrawer.drawNeuron is not a function.");
         _neuron["default"].defaultDrawer.draw = NeuronDrawer.drawNeuron;
@@ -332,7 +320,5 @@ var NeuroApp = /*#__PURE__*/function (_App) {
   }]);
   return NeuroApp;
 }(_app["default"]);
-/** Use singleton pattern to ensure only one instance of the app is created, but more because I'm lazy and want to access the instance from anywhere */
-_defineProperty(NeuroApp, "instance", new NeuroApp());
 _defineProperty(NeuroApp, "retry", 0);
 if (typeof module !== "undefined") module.exports = NeuroApp;else console.log("NeuroApp not exported. Running in browser.");
