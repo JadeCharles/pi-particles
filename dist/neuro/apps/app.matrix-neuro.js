@@ -54,7 +54,7 @@ var MatrixNeuroApp = /*#__PURE__*/function () {
       if (typeof arg !== "number") throw new Error("MatrixNeuroApp constructor arguments must be numbers. They reporesent the number of neurons per layer (excluding bias)");
       this.neuronCounts.push(arg);
     }
-    this.activationFunction = new _activationFunction["default"](_activationFunction["default"].sigmoid, _activationFunction["default"].sigmoidPrime, "Sigmoid");
+    this.squashFunction = new _activationFunction["default"](_activationFunction["default"].sigmoid, _activationFunction["default"].sigmoidPrime, "Sigmoid");
 
     // Try different ones, based on the problem. 0.075 feels like a decent default
     this.learningRate = MatrixNeuroApp.defaultLearningRate;
@@ -77,7 +77,7 @@ var MatrixNeuroApp = /*#__PURE__*/function () {
     value: function toJson() {
       return {
         learningRate: this.learningRate,
-        activationFunction: this.activationFunction.name,
+        squashFunction: this.squashFunction.name,
         neuronCounts: this.neuronCounts,
         biases: this.biases.map(function (bias) {
           return bias.toList();
@@ -116,14 +116,14 @@ var MatrixNeuroApp = /*#__PURE__*/function () {
         var weights = this.weightMatrices[layerIndex];
         var hiddenActivations = _neuronMatrix["default"].mult(weights, iterator.copy());
         hiddenActivations.add(layerBias); // Sum up
-        hiddenActivations.setMatrixValues(this.activationFunction.squash); // Activate
+        hiddenActivations.setMatrixValues(this.squashFunction.squash); // Activate
 
         activationValues.push(hiddenActivations);
         iterator = hiddenActivations;
       }
       var output = _neuronMatrix["default"].mult(this.weightMatrices[layerIndex], iterator.copy());
       output.add(this.biases[layerIndex]); // Sum up
-      output.setMatrixValues(this.activationFunction.squash); // Activate
+      output.setMatrixValues(this.squashFunction.squash); // Activate
 
       activationValues.push(output);
       this.activationValues = activationValues;
@@ -155,14 +155,14 @@ var MatrixNeuroApp = /*#__PURE__*/function () {
 
     /**
      * Takes the summed up weight x input + bias and squashes it between 0 and 1 (or some other small range)
-     * @param {ActivationFunction} activationFunction - The squashing function to use. Defaults to sigmoid
+     * @param {ActivationFunction} squashFunction - The squashing function to use. Defaults to sigmoid
      * @returns {MatrixNeuroApp} - So we can chain methods together
      */
   }, {
     key: "setActivationFunction",
     value: function setActivationFunction() {
-      var activationFunction = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-      this.activationFunction = activationFunction || this.activationFunction;
+      var squashFunction = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      this.squashFunction = squashFunction || this.squashFunction;
       return this;
     }
 
@@ -194,7 +194,7 @@ var MatrixNeuroApp = /*#__PURE__*/function () {
       var errors = _neuronMatrix["default"].sub(targets, outputs);
 
       // Calculate gradient
-      var gradients = _neuronMatrix["default"].setMatrixValues(outputs, this.activationFunction.getPartialDerivative);
+      var gradients = _neuronMatrix["default"].setMatrixValues(outputs, this.squashFunction.getPartialDerivative);
       gradients.mult(errors);
       gradients.mult(this.learningRate);
 
@@ -212,7 +212,7 @@ var MatrixNeuroApp = /*#__PURE__*/function () {
         this.biases[weightsIndex].add(gradients);
 
         // Calculate next (backward) gradient and rinse/repeat
-        gradients = _neuronMatrix["default"].setMatrixValues(activations, this.activationFunction.getPartialDerivative);
+        gradients = _neuronMatrix["default"].setMatrixValues(activations, this.squashFunction.getPartialDerivative);
         gradients.mult(weightErrors);
         gradients.mult(this.learningRate);
         errors = weightErrors; // Cursor (value is used in the next loop)
@@ -231,7 +231,7 @@ var MatrixNeuroApp = /*#__PURE__*/function () {
       if (typeof json === "string") json = JSON.parse(json);
       if (_typeof(json) !== "object") throw new Error("Invalid json of type '" + _typeof(json).toString() + "' passed to MatrixNeuroApp.fromJson");
       var learningRate = json.learningRate;
-      var activationFunction = _activationFunction["default"].fromName(json.activationFunction);
+      var squashFunction = _activationFunction["default"].fromName(json.squashFunction);
       var neuronCounts = json.neuronCounts;
       var biases = json.biases.map(function (bias) {
         return _neuronMatrix["default"].fromList(bias);
@@ -241,7 +241,7 @@ var MatrixNeuroApp = /*#__PURE__*/function () {
       });
       var app = _construct(MatrixNeuroApp, _toConsumableArray(neuronCounts));
       app.learningRate = learningRate;
-      app.activationFunction = activationFunction;
+      app.squashFunction = squashFunction;
       app.biases = biases;
       app.weightMatrices = weights;
       return app;

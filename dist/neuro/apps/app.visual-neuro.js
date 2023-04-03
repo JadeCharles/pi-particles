@@ -61,7 +61,7 @@ var NeuroApp = /*#__PURE__*/function (_App) {
     var sig = new _activationFunction["default"](_activationFunction["default"].sigmoid, _activationFunction["default"].sigmoidPrime, "Sigmoid");
     ;
     _this.network = new _feedForward["default"](_assertThisInitialized(_this), {
-      activationFunction: sig
+      squashFunction: sig
     });
     _this.text = "Feed-Forward Neural Network";
     _this.isAuto = false;

@@ -37,7 +37,7 @@ var Neuron = /*#__PURE__*/function () {
     this.vectorHandler = VectorHandler.createP5Handler();
     this.drawer = options.drawer || Neuron.defaultDrawer;
     this.speed = 1.0;
-    this.activationFunction = layer.network.activationFunction;
+    this.squashFunction = layer.network.squashFunction;
     this.index = options.index;
     this.forwardConnectors = [];
     this.backConnectors = [];
@@ -63,17 +63,17 @@ var Neuron = /*#__PURE__*/function () {
       this.value = typeof options.value === "number" ? options.value : 0;
     }
     this.didDraw = false;
-    this.squash = this.activationFunction.squash;
+    this.squash = this.squashFunction.squash;
     if (typeof this.squash !== "function") {
-      console.warn("this.activationFunction type: " + _typeof(this.activationFunction).toString());
+      console.warn("this.squashFunction type: " + _typeof(this.squashFunction).toString());
       console.warn("this.squash: " + _typeof(this.squash));
       throw new Error("Invalid activation function: " + this.squash);
     }
     this.movePosition = typeof options.movePosition === "function" ? options.movePosition : function () {
       return Neuron.moveNeuronPosition(_this);
     };
-    this.deSquash = this.activationFunction.getDerivative;
-    this.deSquashPartial = this.activationFunction.getPartialDerivative;
+    this.deSquash = this.squashFunction.getDerivative;
+    this.deSquashPartial = this.squashFunction.getPartialDerivative;
     if (typeof this.index !== "number" || this.index < 0) this.index = layer.neurons.length;
   }
   _createClass(Neuron, [{
